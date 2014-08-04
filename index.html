@@ -665,324 +665,49 @@ class: inverse
 ### 想知道为毛django model用可以用Meta这个字段么,因为他们用了元类,
 ### check django下/db/models/base.py, grep搜一下__metaclass__
 ---
-class: inverse
-## 模块: itertools(一)
-```
->>> def chunker(items, chunk_size):
-...     for _key, group in itertools.groupby(
-...         enumerate(items), lambda x: x[0] // chunk_size):
-...             yield [g[1] for g in group]
->>> for i in chunker(range(10), 4):
-...     print list(i)
-[0, 1, 2, 3]
-[4, 5, 6, 7]
-[8, 9]
->>> l = [(1, 10), (2, 10), (3, 20), (4, 20)]
->>> for key, group in itertools.groupby(l, lambda t: t[1]):
-...     print(key, list(group))
-(10, [(1, 10), (2, 10)])
-(20, [(3, 20), (4, 20)])
-```
-### chain: 把多个迭代器合并成一个迭代器
-### islice: 迭代器分片islice(func, start, end, step)
----
-class: inverse
-## 模块: itertools(二)
-```
->>> def chunker(items, chunk_size):
-...     args = [iter(items)] * chunk_size
-...     return itertools.izip_longest(*args)
-... 
->>> for i in chunker(range(10), 4):
-...     print filter(lambda x:x, list(i))
-... 
-[1, 2, 3]
-[4, 5, 6, 7]
-[8, 9]
-```
----
 class: center, middle, inverse
 # 开发中可能用到的
 ## 电池
 ---
 class: inverse
-## 模块: collections(一)
+## 统计计数
 ```
->>> collections.Counter(words).most_common(10) #word就是个单词列表
-[('the', 1143), ('and', 966), ('to', 762), ('of', 669), ('i', 631),
- ('you', 554),  ('a', 546), ('my', 514), ('hamlet', 471), ('in', 451)]
- >>> Q = collections.deque()
- >>> Q.append(1)
- >>> Q.appendleft(2)
- >>> Q.extend([3, 4])
- >>> Q.extendleft([5, 6])
- >>> Q
- deque([6, 5, 2, 1, 3, 4])
- >>> Q.pop()
- 4
- >>> Q.popleft()
- 6
- >>> Q
- deque([5, 2, 1, 3])
- >>> Q.rotate(3)
- >>> Q
- deque([2, 1, 3, 5])
- >>> Q.rotate(-3)
- >>> Q
- deque([5, 2, 1, 3])
+collections.Counter
+collections.defaultdict(统计时及其常用)
+itertools.groupby
+# 注意使用前list需要先sort,而且keyfunc需要与groupby keyfunc相同
+```
+## 排序
+```
+operator常用作sort中的key
+#sorted(inventory, key=operator.itemgetter(1))
+operator.itemgetter
+operator.attrgetter
+```
+## 列表左右pop,少见的需求
+```
+collections.deque
 ```
 ---
 class: inverse
-## 模块: collections(二)
+## 函数工具
 ```
->>> m = dict((str(x), x) for x in range(10))
->>> print ', '.join(m.keys())
-1, 0, 3, 2, 5, 4, 7, 6, 9, 8
->>> m = collections.OrderedDict((str(x), x) for x in range(10))
->>> print ', '.join(m.keys())
-0, 1, 2, 3, 4, 5, 6, 7, 8, 9
->>> d = {}
->>> for k, v in [('a', 1), ('c', 2), ('a', 3)]:
-...     if k in d:
-...         d[k] += v
-...     else:
-...         d[k] = v
->>> d
-{'a': 4, 'c': 2}
->>> m = collections.defaultdict(int)
->>> m['a']
-0
->>> for k, v in [('a', 1), ('c', 2), ('a', 3)]:
-...     m[k]+= v
->>> m
-defaultdict(<type 'int'>, {'a': 4, 'c': 2})
-```
----
-class: inverse
-## 模块: collections(三)
+functools.partial
+# 实用的工具函数，无论是python内置的方法还是 根据需求写出
+# 的各种方法，很多都会有超过3个的参数，实用partial可以非常
+# 科学的写出符合特定需求的代码，而且高大上的节奏
 
-```
-其实类似于这样的:
->>> d = {}
->>> for k, v in s:
-...     d.setdefault(k, []).append(v)
-...
-# 默认值是1的defaultdict
->>> g = collections.defaultdict(lambda :1)
->>> g['a'] += 1
->>> g['a']
-2
->>> g['b']
-1
-```
----
-class: inverse
-## 模块: collections(四)
+functools.wraps
+# 在写装饰器的时候会丢掉__doc__,wraps把被封装函数的
+# __name__、module、__doc__和 __dict__都复制到封装函数去
 
-```
->>> class Mytype(list):
-...     def insort(self, arr):
-...         bisect.insort_left(self, arr)
-...
->>>
-... d = defaultdict(Mytype)
->>> d['l'].insort(1)
->>> d['l'].insort(9)
->>> d['l'].insort(4)
->>> print d['l']
-[1, 4, 9]
->>> d['a']
-[]
+接受key函数的方法
+sorted(), min(), max(), heapq.nlargest(),
+heapq.nsmallest(), itertools.groupby()
 ```
 ---
-class: inverse
-## operator模块(一)
-### 用operator写伪lisp
-```
->>> reduce(+, (5, 4, 3, 2, 1))
-  File "<stdin>", line 1
-    reduce(+, (5, 4, 3, 2, 1))
-            ^
-SyntaxError: invalid syntax
->>> reduce(operator.add, (5, 4, 3, 2, 1))
-15
->>> def f(op, *args):
-...     return {
-...         '+' : operator.add,
-...         '-' : operator.sub,
-...         '*' : operator.mul,
-...         '/' : operator.div,
-...         '%' : operator.mod 
-...     }[op](*args)
->>> f('*', f('+', 1, 2), 3)
-9
-```
----
-class: inverse
-## operator模块(二)
-```
->>> l = [1, 2, 3, 4, 5]
->>> operator.itemgetter(1)(l)
-2
->>> operator.itemgetter(1,3,4)(l)
-(2, 4, 5)
->>> inventory = [('apple', 3), ('banana', 2),
-                 ('pear', 5), ('orange', 1)]
->>> sorted(inventory, key=operator.itemgetter(1))
-[('orange', 1), ('banana', 2), ('apple', 3), ('pear', 5)]
->>> operator.methodcaller('hello')(h) # 等于h.hello()
-hello world
-# 等于h.func('a', b=2)
->>> operator.methodcaller('func', 1, b=2)(h)
->>> operator.attrgetter('platform')(sys)
-'darwin'
->>> operator.attrgetter('platform', 'maxint')(sys)
-('darwin', 9223372036854775807)
-```
----
-class: inverse
-## operator模块(三)
-```
->>> class a:
-...     '''a"s doc'''
-...     class b:
-...         c = 1
-... 
->>> a.b.c
-1
->>> reduce(getattr, 'b.c'.split('.'), a)
-1
->>> from operator import attrgetter
->>> attrgetter('b.c')(a)
-1
->>> attrgetter('b', '__doc__')(a)
-(<class __main__.b at 0x10e563d50>, 'a"s doc')
-```
----
-class: inverse
-## functools模块
-### functools.partial 冻结部分函数位置函数或关键字参数，简化函数
-
-```
->>> h = Hello(lambda a, b=3: a + b)
->>> functools.partial(h.func, b=10)(1)
-11
->>> import urllib3
->>> make_headers = functools.partial(urllib3.make_headers, keep_alive=True,
-                                     user_agent="Batman/1.0")
->>> make_headers(accept_encoding=True)
-{'connection': 'keep-alive', 'accept-encoding': 'gzip,deflate', 'user-agent': 'Batman/1.0'}
-# 相当于:
->>> make_headers(accept_encoding=True, keep_alive=True, user_agent="Batman/1.0")
-```
----
-class: inverse
-## functools模块
-### wraps 把被封装函数的__name__、module、__doc__和 __dict__都复制到封装函数去
-### partial(update_wrapper, wrapped=wrapped, assigned=assigned, updated=updated)的简写
-
-```
->>> def common(func):
-...     def _deco(*args, **kwargs):
-...         '''In _deco'''
-...         return func(*args, **kwargs)
-...     return _deco
->>> @common
-... def test(p):
-...     '''In test'''
-...     print p
->>> test.__doc__
-'In _deco'
-```
----
-class: inverse
-## functools模块
-### 加上functools.wraps
-
-```
->>> def common(func):
-...     #@wraps(func) # 注意这句
-...     def _deco(*args, **kwargs):
-...         '''In _deco'''
-...         return func(*args, **kwargs)
-...     return _deco
-...
->>> @common
-... def test(p):
-...     '''In test'''
-...     print p
-...
->>> test
-<function test at 0x105b1fa28>
->>> test.__doc__
-'In test'
-```
----
-class: inverse
-## functools模块
-### functools.cmp_to_key 将老式比较函数转换成key函数，用在接受key函数的方法中
-1. sorted(), min(), max(), heapq.nlargest(),
-2. heapq.nsmallest(), itertools.groupby()
-
-```
->>> def mycmp(x, y):
-...     x, y = int(x), int(y)
-...     return (x > y) - (x < y) # 不能用cmp 因为python3已经没有了
-...
->>> values = [5, '3', 7, 2, '0', '1', 4, '10', 1]
->>> sorted(values, key=functools.cmp_to_key(mycmp))
-['0', '1', 1, 2, '3', 4, 5, 7, '10']
->>> cmp(1, 2)
--1
->>> cmp(2, 2)
-0
->>> cmp(3, 2)
-1
->>> max(values, key=functools.cmp_to_key(mycmp))
-'10'
-```
----
-class: inverse
-## functools模块
-
-### functools.total_ordering(一)
-```
->>> @total_ordering
-... class Test:
-...     def __init__(self, value):
-...         self.value = value
-...     def __lt__(self, other):
-...         return self.value < other.value
-...
->>> vars(Test) # 注意哦  没有__eq__
-{'__module__': '__main__',
-'__le__': <function __le__ at 0x105b26500>, '__ge__': <function __ge__ at 0x105b26578>, 
-'__gt__': <function __gt__ at 0x105b23b90>, '__lt__': <function __lt__ at 0x105b26488>,
-'__doc__': None, '__init__': <function __init__ at 0x105b26410>}
->>> Test(1) < Test(2)
-True
->>> Test(3) < Test(2)
-False
->>> Test(2) <= Test(2) # 看 答案不对
-False
-```
----
-class: inverse
-## functools模块
-### functools.total_ordering(二)
-```
->>> @total_ordering
-... class Test:
-...     def __init__(self, value):
-...         self.value = value
-...     def __lt__(self, other):
-...         return self.value < other.value
-...     def __eq__(self, other):
-...         return self.value == other.value
-...
->>> Test(2) <= Test(2) # 答案这次对了
-True
-```
+class: center, middle, inverse
+# 喜闻乐见的开发陷阱
 ---
 class: inverse
 ## 开发陷阱(一) 可变默认参数
@@ -1048,29 +773,14 @@ def create_multipliers():
     return [partial(mul, i) for i in range(5)]
 ```
 ---
-class: center, middle, inverse
-# 个人建议
-## 1. 在合适的地方用合适的技巧
-## 2. 不是它不好,而是你没有用好
----
-class: inverse
-## ipython的技巧(一)
-### 1. ipython的autoreload(不需要退出交互模式在重新import,类似于tornado的autoreload)
-### 2. ipython的storemagic(存储对象,下次进入交互模式继续使用)
-### 3. ipython的save(保存某些历史记录到某文件里面)
-### 4. python/ipython交互模式历史记录搜索
-```
-$cat ~/.inputrc
-## arrow up
-"\e[A":history-search-backward
-## arrow down
-"\e[B":history-search-forward
-```
----
-class: inverse
-## ipython的技巧(二)
-### 5. ipython的logstart(会话记录, 退出后ipython -i ipython_log.py获取原来的会话)
-### 6. ipython的pastebin(将执行命令保存到github的gist)
+class: middle, inverse
+## python django的一些积累
+### [python实用语法](https://github.com/duoduo369/skill_issues/blob/master/python/python.issue.md)
+### [python实用工具](https://github.com/duoduo369/skill_issues/blob/master/python/python_tools.issue.md)
+### [django的一些解释](https://github.com/duoduo369/skill_issues/blob/master/python/django.issue.md)
+### [django_south_script](https://github.com/duoduo369/django_south_script)
+### [django_celery_demo](https://github.com/duoduo369/django_celery_demo)
+### [django_supervisor_gunicorn_demo](https://github.com/duoduo369/django_supervisor_gunicorn_demo)
 ---
 class: center, middle, inverse
 # Q &amp; A
@@ -1078,11 +788,9 @@ class: center, middle, inverse
 class: center, middle, inverse
 ## 联系方式
 
-### Website: [小明明s à domicile](http://www.dongwm.com)
+### GitHub: [duoduo3369](https://github.com/duoduo369)
 
-### GitHub: [dongweiming](http://github.com/dongweiming)
-
-### Gmail: [ciici123@gmail.com](mailto:ciici123@gmail.com)
+### Gmail: [duoduo3369@gmail.com](mailto:duoduo3369@gmail.com)
 
 ---
 class: center, middle, inverse
