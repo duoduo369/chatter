@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>python乱弹</title>
+    <link rel="stylesheet" href="css/default.css" media="screen">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: middle, inverse, center
+```
+             _   _              -
+ _ __  _   _| |_| |__   ___  _ __
+| '_ \| | | | __| '_ \ / _ \| '_ \
+ | |_) | |_| | |_| | | | (_) | | | |
+ | .__/ \__, |\__|_| |_|\___/|_| |_|
+|_|    |___/                     _
+```
+
+# 乱弹
+### Yang Yang
+2014.8.2
+#### Made in [Remark](http://remarkjs.com)
+---
+class: middle, inverse, center
+
+# First...
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+  ### 关键词
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+  ## Idiomatic
+  ## [Transforming Code into Beautiful, Idiomatic Python](http://pan.baidu.com/s/1ntiGAff)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+  ### 关键词
+  ### 邮件列表
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+  ## Idiomatic
+  ## [Transforming Code into Beautiful, Idiomatic Python](http://pan.baidu.com/s/1ntiGAff)
+  ## Pycoder's Weekly
+]
+---
+class: middle, inverse, center
+
+# 字符串吧啦吧啦
+---
+class: inverse
+## 字符串格式化, 是时候抛弃%语法了
+### [PEP3101 Advanced String Formatting](http://legacy.python.org/dev/peps/pep-3101/)
+
+```
+>>> "{}".format('a') # 类似 %s的用法
+'a'
+>>> "{key}={value}".format(key="a", value=10) # 使用命名参数
+'a=10'
+>>> "[{0:<10}], [{0:^10}], [{0:*>10}]".format("a") # 左中右对⻬
+'[a         ], [    a     ], [*********a]'
+>>> "{0.platform}".format(sys) # 成员, 属性
+'darwin'
+>>> "{0[a]}".format(dict(a=10, b=20)) # 字典
+'10'
+>>> "{0[5]}".format(range(10)) # 列表
+'5'
+>>> "My name is {0} :-{{}}".format('Fred') # 真得想显示{},需要双{}
+'My name is Fred :-{}'
+>>> "Today is: {0:%a %b %d %H:%M:%S %Y}".format(datetime.now())
+'Today is: Mon Mar 31 23:59:34 2014'
+
+```
+---
+class: middle, inverse, center
+
+# 使用合适的数据结构
+---
+class: middle, inverse, center
+
+## list, set, dict, deque该如何选择？
+
+### [python数据结构时间复杂度](https://wiki.python.org/moin/TimeComplexity)
+
+---
+class: middle, inverse
+
+## 各种解析
+```
+>>> l = [i for i in xrange(100)] # 列表解析
+
+>>> s = {i for i in xrange(100)} # set解析
+
+>>> d = {i:i for i in xrange(100)} # 字典解析
+```
+
+### 理论上XX解析都可以替换map, reduce, filter, XX解析在简单的情况下可读性更好
+### 如果逻辑复杂，不要把这段逻辑写成XX解析，分行写
+---
+class: inverse
+## 列表去重
+```
+>>> l = [1, 2, 2, 3, 3, 3]
+>>> {}.fromkeys(l).keys()
+[1, 2, 3] # 列表去重(1)
+>>> list(set(l)) # 列表去重(2), 个人推荐 Readability counts.
+[1, 2, 3]
+```
+---
+class: inverse
+## 操作字典
+
+```
+>>> sorted(d.iteritems(), key=itemgetter(1), reverse=True)
+# 字典按照值排序 PEP 265
+[('b', 23), ('d', 17), ('c', 5), ('a', 2), ('e', 1)]
+>>> dict((["a", 1], ["b", 2])) # 用两个序列类型构造dict
+{'a': 1, 'b': 2}
+>>> dict.fromkeys("abc", 1) # 用序列做 key,并提供默认 value
+{'a': 1, 'c': 1, 'b': 1}
+>>> {k:v for k, v in zip("abc", range(3))} # 字典解析
+{'a': 0, 'c': 2, 'b': 1}
+>>> d = {"a":1, "b":2}
+>>> d.get("c", 200) # key 不存在,直接返回 default值
+200
+>>> d
+{'a': 1, 'c': 200, 'b': 2}
+>>> d.setdefault("c", 200) # key 不存在,先设置,后返回
+200
+>>> d
+{'a': 1, 'c': 200, 'b': 2}
+```
+---
+class: inverse
+## 字典视图
+
+```
+>>> d1 = dict(a = 1, b = 2)
+>>> d2 = dict(b = 2, c = 3)
+>>> d1 & d2 # 字典不支持该操作
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for &: 'dict' and 'dict'
+>>> v1 = d1.viewitems()
+>>> v2 = d2.viewitems()
+>>> v1 & v2 # 交集
+set([('b', 2)])
+>>> dict(v1 & v2) # 可以转化为字典
+{'b': 2}
+>>> v1 | v2 # 并集
+set([('a', 1), ('b', 2), ('c', 3)])
+>>> v1 - v2 #差集(仅v1有,v2没有的)
+set([('a', 1)])
+>>> v1 ^ v2 # 对称差集 (不会同时出现在 v1 和 v2 中)
+set([('a', 1), ('c', 3)])
+>>> ('a', 1) in v1 #判断
+True
+```
+---
+class: middle, inverse, center
+
+# 某些开源项目里面有些奇怪的东西
+## \_\_future\_\_
+---
+class: inverse
+### from \_\_future\_\_ import unicode_literals
+```
+>>> s = '美的'
+>>> s
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> from __future__ import unicode_literals
+>>> s = '美的'
+>>> s
+u'\u7f8e\u7684'
+>>> s.encode('utf-8')
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> s = b'美的'
+>>> s
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> type(s)
+<type 'str'>
+```
+---
+class: inverse
+### from \_\_future\_\_ import absolute_import
+### 不是支持了绝对引入,而是拒绝隐式引入
+```
+$cat for_absolute_import/string.py
+a = 1
+$cat for_absolute_import/main.py
+import string # 其实我们要的是当前目录下的string模块
+>>> from for_absolute_import.main import string
+>>> string # 是隐式引入的
+<module 'for_absolute_import.string' from 'for_absolute_import/string.py'>
+>>> 1
+1
+## 我来修改下
+$cat for_absolute_import/main.py
+from __future__ import absolute_import
+import string
+>>> from for_absolute_import.main import string
+>>> string # 看这里其实还是在用string模块
+<module 'string' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/string.pyc'>
+```
+---
+class: inverse
+## 我靠,我的需求呢? -- 在很多开源项目是拒绝你的隐式用法的,
+## 比如celery
+## 来点标准做法:
+```
+from __future__ import absolute_import
+from .string import a # 比较常用的风格
+from for_absolute_import.string import a
+# 官方推荐的风格,强烈建议这样的风格
+```
+---
+class: middle, inverse, center
+
+# 神奇的yield
+
+---
+class: inverse
+## 生成器
+
+```
+>>> class Data(object):
+...     def __init__(self, *args):
+...         self._data = list(args)
+...     def __iter__(self):
+...         for x in self._data:
+...             yield x
+...
+>>> d = Data(1, 2, 3)
+>>> for x in d:
+...     print(x)
+...
+1
+2
+3
+>>> (i for i in [1,2,3]) # 这是生成器表达式
+<generator object <genexpr> at 0x10657a640>
+```
+---
+class: inverse
+## 斐波那契数列
+
+```
+>>> import itertools
+>>>
+>>> def fib():
+...     a, b = 0, 1
+...     while 1:
+...         yield b
+...         a, b = b, a + b
+...
+>>>
+>>> print list(itertools.islice(fib(), 10))
+[1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+```
+---
+class: inverse
+## 关于协程, 个人的一些理解
+### 线程和进程的控制权是操作系统级别, 协程则是程序员级别
+```
+并发：1 CPU 多进程
+并行：多 CPU 多进程
+线程: 1进程 多线程
+协程：单线程搞一些异步, 没有进程线程切换开销
+```
+python由于存在GIL(全局解释器锁)，多线程是一件比较蛋疼的事情，
+一般是采用多进程和协程的方式来做一些分流。
+
+### 个人感觉协程主要用在一些无尽的事件中,尤其是存在IO阻塞的时候, 包括打log, 服务器等待request, 斐波那契
+---
+class: inverse
+## 其实yield和协程关系很密切
+
+```
+>>> def coroutine():
+...     print "coroutine start..."
+...     result = None
+...     while True:
+...         s = yield result
+...         result = 'result: {}'.format(s)
+...
+>>> c = coroutine() # 函数返回协程对象
+>>> c.send(None) # 使用 send(None) 或 next() 启动协程
+coroutine start...
+>>> c.send("first") # 向协程发送消息,使其恢复执⾏
+'result: first'
+>>> c.send("second")
+'result: second'
+>>> c.close() # 关闭协程,使其退出。或用c.throw() 使其引发异常
+>>> c.send("never recv")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+
+---
+class: inverse
+## 来个回调(阻塞的)
+
+```
+>>> def framework(logic, callback):
+...     s = logic()
+...     print "[FX] logic: ", s
+...     print "[FX] do something"
+...     callback("async: " + s)
+...
+>>> def logic():
+...     s = "mylogic"
+...     return s
+...
+>>> def callback(s):
+...     print s
+...
+>>> framework(logic, callback)
+[FX] logic:  mylogic
+[FX] do something
+async: mylogic
+```
+---
+class: inverse
+## 来个回调(异步的)
+
+```
+>>> def framework(logic):
+...     try:
+...         it = logic()
+...         s = next(it)
+...         print "[FX] logic: ", s
+...         print "[FX] do something"
+...         it.send("async: " + s)
+...     except StopIteration:
+...          pass
+...
+>>> def logic():
+...     s = "mylogic"
+...     r = yield s # yield s以及控制权出去，等待send输入
+...     print r
+...
+>>> framework(logic)
+[FX] logic:  mylogic
+[FX] do something
+async: mylogic
+```
+---
+class: middle, inverse, center
+
+# 拒绝三明治代码
+## 上下文管理器
+
+---
+class: inverse
+## 实现一个with上下文管理类(自动关闭mongodb连接)
+```
+>>> import pymongo
+>>> class Operation(object):
+...     def __init__(self, database,
+...                  host='localhost', port=27017):
+...         self._db = pymongo.MongoClient(
+...                       host, port)[database]
+...     def __enter__(self):
+...         return self._db
+...     def __exit__(self, exc_type, exc_val, exc_tb):
+...         self._db.connection.disconnect()
+...
+>>> with Operation(database='test') as db:
+...     print db.test.find_one()
+...
+{u'a': 0.9075717522597431, u'_id': ObjectId('52e0da5cc23e7dbdb0a1ec36')}
+```
+---
+class: inverse
+## 看到这里, 就得说说contextmanager
+### 官方文档如下
+```
+@contextlib.contextmanager
+def some_generator(<arguments>):
+    <setup>
+    try:
+        yield <value>
+    finally:
+        <cleanup>
+with some_generator(<arguments>) as <variable>:
+    <body>
+```
+
+也就是:
+
+```
+    <setup>
+    try:
+        <variable> = <value>
+        <body>
+    finally:
+        <cleanup>
+```
+---
+class: inverse
+## contextmanager例子(一)
+```
+>>> lock = threading.Lock()
+>>> @contextmanager
+... def openlock():
+...     print('Acquire')
+...     lock.acquire()
+...     yield
+...     print('Releasing')
+...     lock.release()
+... 
+>>> with openlock():
+...     print('Lock is locked: {}'.format(lock.locked()))
+...     print 'Do some stuff'
+... 
+Acquire
+Lock is locked: True
+Do some stuff
+Releasing
+```
+---
+class: inverse
+## contextmanager例子(二) as
+```
+>>> @contextmanager
+... def operation(database, host='localhost', 
+				  port=27017):
+...     db = pymongo.MongoClient(host, port)[database]
+...     yield db
+...     db.connection.disconnect()
+... 
+>>> import pymongo
+>>> with operation('test') as db:
+...     print(db.test.find_one())
+... 
+{u'a': 0.9075717522597431, u'_id': ObjectId('52e0da5cc23e7dbdb0a1ec36')}
+```
+---
+class: inverse
+## 包导入
+
+```
+>>> import imp
+>>> f, filename, description = imp.find_module('sys')
+>>> sys = imp.load_module('sys', f, filename, description)
+>>> sys
+<module 'sys' (built-in)>
+>>> os = __import__('os')
+>>> os.path
+<module 'posixpath' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/posixpath.pyc'>
+>>> filename = "t.py"
+>>> f = open("t.py")
+>>> description = ('.py', 'U', 1)
+>>> t = imp.load_module('some', f, filename, description) # t就是`import t`后的结果
+```
+---
+class: inverse
+## 包构建\_\_all\_\_
+
+```
+因为 import 实际导⼊的是⺫标模块 globals 名字空间中的成员,
+那么就有⼀个问题: 模块也会导⼊其他模块,这些模块同样在⺫标模块
+的名字空间中. "import *" 操作时,所有这些一并被带入到当前模
+块中,造成一定程度的污染
+
+__all__ = ["add", "x"]
+```
+---
+class: inverse
+## \_\_slots\_\_ 大量属性时减少内存占用
+### python会在类中使用__dict__存储属性，当需要建造超多对象时，大大浪费内存,只在新式类中有效，继承的各种父类也必须有\_\_slots\_\_
+
+```
+>>> class User(object):
+...     __slots__ = ("name", "age")
+...     def __init__(self, name, age):
+...         self.name = name
+...         self.age = age
+...
+>>> u = User("Dong", 28)
+>>> hasattr(u, "__dict__")
+False
+>>> u.title = "xxx"
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'User' object has no attribute 'title'
+```
+---
+class: inverse
+## 装饰器
+
+### python的内置的装饰器语法非常漂亮的讲解了装饰者模式, 写装饰器时应该使用wraps后面会讲到。
+
+```
+>>> def common(func):
+...     def _deco(*args, **kwargs):
+...         print 'args:', args
+...         return func(*args, **kwargs)
+...     return _deco
+...
+>>> @common
+... def test(p):
+...     print p
+...
+>>> test
+<function _deco at 0x10d996a28>
+>>> test(1)
+args: (1,)
+1
+
+```
+---
+class: inverse
+## 带参数的装饰器
+平时写代码一般情况遇不到这种三层的东西，如果遇到变态的需求的时候一定要找个例子比着写。
+
+```
+>>> def common(*args, **kw):
+...     a = args
+...     def _common(func):
+...         def _deco(*args, **kwargs):
+...             print 'args:', args, a
+...             return func(*args, **kwargs)
+...         return _deco
+...     return _common
+...
+>>> @common('c')
+... def test(p):
+...     print p
+...
+>>> test
+<function _deco at 0x10d99e5f0>
+>>> test(1)
+args: (1,) ('c',)
+1
+
+```
+---
+class: center, middle, inverse
+# 元类......
+## Metaclasses
+---
+class: inverse
+## 元类是什么
+
+### 对象是类的实例,类也是对象,类是元类的实例
+
+```
+>>> class Myclass(): pass # 不要学我的写法
+>>> type(Myclass)
+<type 'classobj'>
+>>> class Myclass(object): pass
+>>> type(Myclass)
+<type 'type'>
+>>> type(type)
+<type 'type'>
+>>> class Myclass: # 对于这个例子,有没有括号都无所谓
+...     __metaclass__ = type
+>>> type(Myclass)
+<type 'type'>
+>>> print Myclass
+<class '__main__.Myclass'>
+>>> print Myclass()
+<__main__.Myclass object at 0x10d9ad190>
+```
+---
+class: inverse
+## 模拟生成一个类
+### 直接调type(少见, 因为本来就难理解..)
+```
+>>> def __init__(self, func):
+...     self.func = func
+>>> def hello(self):
+...     print 'hello world'
+>>> attrs = {'__init__': __init__, 'hello': hello}
+>>> bases = (object,)
+>>> Hello = type('Hello', bases, attrs)
+>>> h = Hello(lambda a, b=3: a + b)
+>>> h.hello()
+hello world
+# 其实等于下面的类
+class Hello(object):
+    def __init__(self, func):
+        self.func = func
+    def hello(self):
+        print 'hello world'
+```
+---
+class: inverse
+## 元类: \_\_metaclass\_\_(实现前面的Hello类)
+
+```
+class HelloMeta(type): # 注意继承至type
+    def __new__(cls, name, bases, attrs):
+        def __init__(cls, func):
+            cls.func = func
+        def hello(cls):
+            print 'hello world'
+        t = type.__new__(cls, name, bases, attrs)
+        t.__init__ = __init__
+        t.hello = hello
+        return t # 要return创建的类哦
+
+class New_Hello(object):
+    __metaclass__ = HelloMeta
+```
+---
+class: inverse
+## 元类一般用在对于生成的类有特殊需求的时候
+### 这种特殊的需求特殊到你并不想或者不能使用继承，因而故意去打破OOP
+### 因为元类可以写出一些极度动态灵活高深的代码
+## 简称神代码
+## MAGIC CODE(Only God known what's that for.)
+### 想知道为毛django model用可以用Meta这个字段么,因为他们用了元类,
+### check django下/db/models/base.py, grep搜一下__metaclass__
+---
+class: inverse
+## 模块: itertools(一)
+```
+>>> def chunker(items, chunk_size):
+...     for _key, group in itertools.groupby(
+...         enumerate(items), lambda x: x[0] // chunk_size):
+...             yield [g[1] for g in group]
+>>> for i in chunker(range(10), 4):
+...     print list(i)
+[0, 1, 2, 3]
+[4, 5, 6, 7]
+[8, 9]
+>>> l = [(1, 10), (2, 10), (3, 20), (4, 20)]
+>>> for key, group in itertools.groupby(l, lambda t: t[1]):
+...     print(key, list(group))
+(10, [(1, 10), (2, 10)])
+(20, [(3, 20), (4, 20)])
+```
+### chain: 把多个迭代器合并成一个迭代器
+### islice: 迭代器分片islice(func, start, end, step)
+---
+class: inverse
+## 模块: itertools(二)
+```
+>>> def chunker(items, chunk_size):
+...     args = [iter(items)] * chunk_size
+...     return itertools.izip_longest(*args)
+... 
+>>> for i in chunker(range(10), 4):
+...     print filter(lambda x:x, list(i))
+... 
+[1, 2, 3]
+[4, 5, 6, 7]
+[8, 9]
+```
+---
+class: center, middle, inverse
+# 开发中可能用到的
+## 电池
+---
+class: inverse
+## 模块: collections(一)
+```
+>>> collections.Counter(words).most_common(10) #word就是个单词列表
+[('the', 1143), ('and', 966), ('to', 762), ('of', 669), ('i', 631),
+ ('you', 554),  ('a', 546), ('my', 514), ('hamlet', 471), ('in', 451)]
+ >>> Q = collections.deque()
+ >>> Q.append(1)
+ >>> Q.appendleft(2)
+ >>> Q.extend([3, 4])
+ >>> Q.extendleft([5, 6])
+ >>> Q
+ deque([6, 5, 2, 1, 3, 4])
+ >>> Q.pop()
+ 4
+ >>> Q.popleft()
+ 6
+ >>> Q
+ deque([5, 2, 1, 3])
+ >>> Q.rotate(3)
+ >>> Q
+ deque([2, 1, 3, 5])
+ >>> Q.rotate(-3)
+ >>> Q
+ deque([5, 2, 1, 3])
+```
+---
+class: inverse
+## 模块: collections(二)
+```
+>>> m = dict((str(x), x) for x in range(10))
+>>> print ', '.join(m.keys())
+1, 0, 3, 2, 5, 4, 7, 6, 9, 8
+>>> m = collections.OrderedDict((str(x), x) for x in range(10))
+>>> print ', '.join(m.keys())
+0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+>>> d = {}
+>>> for k, v in [('a', 1), ('c', 2), ('a', 3)]:
+...     if k in d:
+...         d[k] += v
+...     else:
+...         d[k] = v
+>>> d
+{'a': 4, 'c': 2}
+>>> m = collections.defaultdict(int)
+>>> m['a']
+0
+>>> for k, v in [('a', 1), ('c', 2), ('a', 3)]:
+...     m[k]+= v
+>>> m
+defaultdict(<type 'int'>, {'a': 4, 'c': 2})
+```
+---
+class: inverse
+## 模块: collections(三)
+
+```
+其实类似于这样的:
+>>> d = {}
+>>> for k, v in s:
+...     d.setdefault(k, []).append(v)
+...
+# 默认值是1的defaultdict
+>>> g = collections.defaultdict(lambda :1)
+>>> g['a'] += 1
+>>> g['a']
+2
+>>> g['b']
+1
+```
+---
+class: inverse
+## 模块: collections(四)
+
+```
+>>> class Mytype(list):
+...     def insort(self, arr):
+...         bisect.insort_left(self, arr)
+...
+>>>
+... d = defaultdict(Mytype)
+>>> d['l'].insort(1)
+>>> d['l'].insort(9)
+>>> d['l'].insort(4)
+>>> print d['l']
+[1, 4, 9]
+>>> d['a']
+[]
+```
+---
+class: inverse
+## operator模块(一)
+### 用operator写伪lisp
+```
+>>> reduce(+, (5, 4, 3, 2, 1))
+  File "<stdin>", line 1
+    reduce(+, (5, 4, 3, 2, 1))
+            ^
+SyntaxError: invalid syntax
+>>> reduce(operator.add, (5, 4, 3, 2, 1))
+15
+>>> def f(op, *args):
+...     return {
+...         '+' : operator.add,
+...         '-' : operator.sub,
+...         '*' : operator.mul,
+...         '/' : operator.div,
+...         '%' : operator.mod 
+...     }[op](*args)
+>>> f('*', f('+', 1, 2), 3)
+9
+```
+---
+class: inverse
+## operator模块(二)
+```
+>>> l = [1, 2, 3, 4, 5]
+>>> operator.itemgetter(1)(l)
+2
+>>> operator.itemgetter(1,3,4)(l)
+(2, 4, 5)
+>>> inventory = [('apple', 3), ('banana', 2),
+                 ('pear', 5), ('orange', 1)]
+>>> sorted(inventory, key=operator.itemgetter(1))
+[('orange', 1), ('banana', 2), ('apple', 3), ('pear', 5)]
+>>> operator.methodcaller('hello')(h) # 等于h.hello()
+hello world
+# 等于h.func('a', b=2)
+>>> operator.methodcaller('func', 1, b=2)(h)
+>>> operator.attrgetter('platform')(sys)
+'darwin'
+>>> operator.attrgetter('platform', 'maxint')(sys)
+('darwin', 9223372036854775807)
+```
+---
+class: inverse
+## operator模块(三)
+```
+>>> class a:
+...     '''a"s doc'''
+...     class b:
+...         c = 1
+... 
+>>> a.b.c
+1
+>>> reduce(getattr, 'b.c'.split('.'), a)
+1
+>>> from operator import attrgetter
+>>> attrgetter('b.c')(a)
+1
+>>> attrgetter('b', '__doc__')(a)
+(<class __main__.b at 0x10e563d50>, 'a"s doc')
+```
+---
+class: inverse
+## functools模块
+### functools.partial 冻结部分函数位置函数或关键字参数，简化函数
+
+```
+>>> h = Hello(lambda a, b=3: a + b)
+>>> functools.partial(h.func, b=10)(1)
+11
+>>> import urllib3
+>>> make_headers = functools.partial(urllib3.make_headers, keep_alive=True,
+                                     user_agent="Batman/1.0")
+>>> make_headers(accept_encoding=True)
+{'connection': 'keep-alive', 'accept-encoding': 'gzip,deflate', 'user-agent': 'Batman/1.0'}
+# 相当于:
+>>> make_headers(accept_encoding=True, keep_alive=True, user_agent="Batman/1.0")
+```
+---
+class: inverse
+## functools模块
+### wraps 把被封装函数的__name__、module、__doc__和 __dict__都复制到封装函数去
+### partial(update_wrapper, wrapped=wrapped, assigned=assigned, updated=updated)的简写
+
+```
+>>> def common(func):
+...     def _deco(*args, **kwargs):
+...         '''In _deco'''
+...         return func(*args, **kwargs)
+...     return _deco
+>>> @common
+... def test(p):
+...     '''In test'''
+...     print p
+>>> test.__doc__
+'In _deco'
+```
+---
+class: inverse
+## functools模块
+### 加上functools.wraps
+
+```
+>>> def common(func):
+...     #@wraps(func) # 注意这句
+...     def _deco(*args, **kwargs):
+...         '''In _deco'''
+...         return func(*args, **kwargs)
+...     return _deco
+...
+>>> @common
+... def test(p):
+...     '''In test'''
+...     print p
+...
+>>> test
+<function test at 0x105b1fa28>
+>>> test.__doc__
+'In test'
+```
+---
+class: inverse
+## functools模块
+### functools.cmp_to_key 将老式比较函数转换成key函数，用在接受key函数的方法中
+1. sorted(), min(), max(), heapq.nlargest(),
+2. heapq.nsmallest(), itertools.groupby()
+
+```
+>>> def mycmp(x, y):
+...     x, y = int(x), int(y)
+...     return (x > y) - (x < y) # 不能用cmp 因为python3已经没有了
+...
+>>> values = [5, '3', 7, 2, '0', '1', 4, '10', 1]
+>>> sorted(values, key=functools.cmp_to_key(mycmp))
+['0', '1', 1, 2, '3', 4, 5, 7, '10']
+>>> cmp(1, 2)
+-1
+>>> cmp(2, 2)
+0
+>>> cmp(3, 2)
+1
+>>> max(values, key=functools.cmp_to_key(mycmp))
+'10'
+```
+---
+class: inverse
+## functools模块
+
+### functools.total_ordering(一)
+```
+>>> @total_ordering
+... class Test:
+...     def __init__(self, value):
+...         self.value = value
+...     def __lt__(self, other):
+...         return self.value < other.value
+...
+>>> vars(Test) # 注意哦  没有__eq__
+{'__module__': '__main__',
+'__le__': <function __le__ at 0x105b26500>, '__ge__': <function __ge__ at 0x105b26578>, 
+'__gt__': <function __gt__ at 0x105b23b90>, '__lt__': <function __lt__ at 0x105b26488>,
+'__doc__': None, '__init__': <function __init__ at 0x105b26410>}
+>>> Test(1) < Test(2)
+True
+>>> Test(3) < Test(2)
+False
+>>> Test(2) <= Test(2) # 看 答案不对
+False
+```
+---
+class: inverse
+## functools模块
+### functools.total_ordering(二)
+```
+>>> @total_ordering
+... class Test:
+...     def __init__(self, value):
+...         self.value = value
+...     def __lt__(self, other):
+...         return self.value < other.value
+...     def __eq__(self, other):
+...         return self.value == other.value
+...
+>>> Test(2) <= Test(2) # 答案这次对了
+True
+```
+---
+class: inverse
+## 开发陷阱(一) 可变默认参数
+```
+>>> def append_to(element, to=[]):
+...     to.append(element)
+...     return to
+... 
+>>> my_list = append_to(12)
+>>> my_list
+[12]
+>>> my_other_list = append_to(42)
+>>> my_other_list
+[12, 42] # Oh, no~
+```
+### 原因: 函数创建是其to及创建(一次性的),以后调用都是操作这个列表
+```
+def append_to(element, to=None):
+    if to is None:
+        to = []
+    to.append(element)
+    return to
+```
+---
+class: inverse
+## 开发陷阱(二) 闭包变量绑定
+```
+>>> def create_multipliers():
+...     return [lambda x : i * x for i in range(5)]
+... 
+>>> for multiplier in create_multipliers():
+...     print multiplier(2)
+... 
+8
+8
+8
+8
+8
+### 看下面的例子
+>>> def create_multipliers():
+...     s = [lambda x : i * x for i in range(5)]
+...     print locals()['i']
+...     return s
+... 
+>>> create_multipliers()
+4 # 是的 i其实在循环后已经变成了常量4
+[<function <lambda> at 0x10b654b18>, <function <lambda> at 0x10b654b90>,
+<function <lambda> at 0x10b654c08>, <function <lambda> at 0x10b654c80>,
+<function <lambda> at 0x10b654de8>]
+```
+---
+class: inverse
+## 开发陷阱(二) 闭包应该的用法
+```
+>>> def create_multipliers():
+...     return [lambda x, i=i : i * x for i in range(5)]
+... 
+或者这样:
+from functools import partial
+from operator import mul
+
+def create_multipliers():
+    return [partial(mul, i) for i in range(5)]
+```
+---
+class: center, middle, inverse
+# 个人建议
+## 1. 在合适的地方用合适的技巧
+## 2. 不是它不好,而是你没有用好
+---
+class: inverse
+## ipython的技巧(一)
+### 1. ipython的autoreload(不需要退出交互模式在重新import,类似于tornado的autoreload)
+### 2. ipython的storemagic(存储对象,下次进入交互模式继续使用)
+### 3. ipython的save(保存某些历史记录到某文件里面)
+### 4. python/ipython交互模式历史记录搜索
+```
+$cat ~/.inputrc
+## arrow up
+"\e[A":history-search-backward
+## arrow down
+"\e[B":history-search-forward
+```
+---
+class: inverse
+## ipython的技巧(二)
+### 5. ipython的logstart(会话记录, 退出后ipython -i ipython_log.py获取原来的会话)
+### 6. ipython的pastebin(将执行命令保存到github的gist)
+---
+class: center, middle, inverse
+# Q &amp; A
+---
+class: center, middle, inverse
+## 联系方式
+
+### Website: [小明明s à domicile](http://www.dongwm.com)
+
+### GitHub: [dongweiming](http://github.com/dongweiming)
+
+### Gmail: [ciici123@gmail.com](mailto:ciici123@gmail.com)
+
+---
+class: center, middle, inverse
+# 谢谢大家
+#### Made in [Remark](http://remarkjs.com)
+    </textarea>
+    <script src="js/remark.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create({
+        highlightStyle: 'monokai',
+        highlightLanguage: 'remark'
+      });
+    </script>
+  </body>
+</html>
