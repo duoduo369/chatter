@@ -26,6 +26,26 @@ class: middle, inverse, center
 class: middle, inverse, center
 
 # First...
+
+---
+class: middle, inverse, center
+
+# 让我们先说说Git
+---
+class:  inverse
+
+## 第一件事情，搞清楚你文件的状态
+### 为什么有的时候不能checkout到其他分支？提交前你修改了哪些文件？修改了什么？
+```
+untracked      unmodified      modified      staged
+           add     -->    edit    -->    add
+                         <--           commit
+
+---------------------- git status -----------------------
+                       git diff         git diff --staged
+      git checkout
+                                     git stash
+```
 ---
 class: middle, inverse
 
