@@ -47,6 +47,105 @@ untracked      unmodified      modified      staged
                                      git stash
 ```
 ---
+class: inverse
+## 如何恢复？
+### 版本控制的主要目的就是你可以随时找到某一个点的代码，因此在用git命令前你应该知道怎么恢复原来的现场。注意看git status的提示
+```
+untracked 状态完全没有恢复命令
+unmodified 状态
+  当你修改了某个文件，后悔了:
+    1. 没有add,git co -- 文件
+       可以将此文件恢复到unmodified的状态
+    2. 已经add,git reset HEAD 文件
+       可以将此文件恢复到unmodified的状态
+  当你修改了一堆文件，并且都不想要了,或者临时
+  需要一个干净的状态(为了切分支容易么)
+    1. 先git add 这些文件
+    2. git stash
+       stash的东西可以随时git stash apply回来
+  不小心提交了或者有目的的故意提交了一些垃圾(为了删除)
+    git reset HEAD^ --hard
+
+```
+
+
+---
+class:  inverse
+## 什么时候该切分支?怎么切分支？
+### 1. 开发新特性, 修bug时，总之是一项新任务, 没人跟你抢
+### 2. 合代码，此时切分支是为了备份你正确的状态，毕竟合代码是很蛋疼的事情。对于强迫症状患者，应该在任何一次merge, rebase前切分支
+### 3. 拉代码，需要分支上最新特性(实际上也是合代码).
+
+---
+class:  inverse
+## 插播git log
+### 查log一般发生于你想合代码的时候
+### 这又是一件频繁的事情，就像git status,git diff一样.装一个tig吧亲，不装的话使用这条命令
+```
+git log --decorate --graph --color
+配置到git config里面去就直接git alog了
+alias.alog=log --decorate --graph --color
+```
+### 这条命令是让你可以直接查看commit的一种树形结构(对于某些图不要被吓到).
+```
+git log -p commit code前几位直接查看某commit
+```
+---
+class:  inverse
+## 关于怎么切, 怎么合
+```
+新分支 git checkout -b xxx
+最好不要直接在你的分支上pull, pull == fetch + merge
+```
+## 合代码的流程
+```
+1. git fetch origin
+2. git co xxx分支(你想合并的本地分支)
+3. git checkout -b mirror(新建分支随便搞)
+4. 这一步可以不一样
+   git merge origin/xxx
+   git rebase origin/xxx
+对于有强迫症的人来说，强烈建议使用git rebase
+你的代码永远是一条fastforward的直线，美啊
+```
+---
+class: inverse
+
+## 更简单的用法
+```
+1. git co xxx分支(你想合并的本地分支)
+2. git checkout -b mirror(新建分支随便搞)
+3. git pull origin xxx
+   git pull --rebase origin xxx
+
+```
+---
+class: inverse
+## 神奇的rebase和cherry-pick
+
+### 这两个都是commit级别的命令, 为合代码提供了非常灵活的特性,尤其是当你merge出现一些神奇的错误时，rebase一般可以救命。
+
+### rebase是一个神奇的命令，他可以让你重写你的提交记录， 与git commit --amend不同的地方是他可以重写任何commit,这个特性使得rebase拥有了一个灵活天赋，他可以将你的commit graph改写为一种直线的状态
+
+### cherry-pick(摘樱桃), cherry-pick与rebase有相似之处(rebase 在交互模式中可以实现一些cherry-pick的功能),除了在为开源项目合代码的时候，平时开发时在修bug时非常好用。
+
+---
+class: inverse
+## rebase不是万能的,何时不用rebase?
+### rebase使情况
+```
+1. 没有提交过的分支
+2. 提交了但是确定只有你一个人搞的分支
+```
+## 万万不能用的情况
+### 一个多人合作的分支，更改已经push到服务器里面的commit,然后强推
+
+## 万一远程分支被rebase后又强推了怎么办？
+```
+git pull --rebase可以帮你解决这种蛋疼的问题
+```
+
+---
 class: middle, inverse
 
 .left-column[
