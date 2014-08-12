@@ -375,6 +375,25 @@ set([('a', 1), ('c', 3)])
 True
 ```
 ---
+class: inverse
+## python里面class和function都是一等公民
+### 这个属性可以避免很多if else判断，或者做一个template
+```
+MAPPER ={
+  'condition1': func1,
+  'condition2': func2
+}
+
+def run(condition, mapper=MAPPER):
+    func = MAPPER[condition]
+    return func()
+
+def hook(mapper=MAPPER):
+    for conditon, func in MAPPER:
+        func()
+```
+
+---
 class: middle, inverse, center
 
 # 某些开源项目里面有些奇怪的东西
@@ -513,55 +532,6 @@ coroutine start...
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 StopIteration
-```
-
----
-class: inverse
-## 来个回调(阻塞的)
-
-```
->>> def framework(logic, callback):
-...     s = logic()
-...     print "[FX] logic: ", s
-...     print "[FX] do something"
-...     callback("async: " + s)
-...
->>> def logic():
-...     s = "mylogic"
-...     return s
-...
->>> def callback(s):
-...     print s
-...
->>> framework(logic, callback)
-[FX] logic:  mylogic
-[FX] do something
-async: mylogic
-```
----
-class: inverse
-## 来个回调(异步的)
-
-```
->>> def framework(logic):
-...     try:
-...         it = logic()
-...         s = next(it)
-...         print "[FX] logic: ", s
-...         print "[FX] do something"
-...         it.send("async: " + s)
-...     except StopIteration:
-...          pass
-...
->>> def logic():
-...     s = "mylogic"
-...     r = yield s # yield s以及控制权出去，等待send输入
-...     print r
-...
->>> framework(logic)
-[FX] logic:  mylogic
-[FX] do something
-async: mylogic
 ```
 ---
 class: middle, inverse, center
