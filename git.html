@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Git排坑指南</title>
+    <link rel="stylesheet" href="css/default.css" media="screen">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: middle, inverse, center
+
+![git](./img/git.png)
+
+# 排坑指南
+### Yang Yang
+2015.1.5
+#### Made in [Remark](http://remarkjs.com)
+---
+class: inverse
+
+# 准备
+
+## computer一台
+### windows Mac Linux
+## git环境
+## 剧本
+你准备开发一个应用,后端用python完成restful API,前端采用
+某个MVC以及各种现代前端工具,同时你又要做移动端的开发,
+上线后还要做好运维的工作...好在有几个小伙伴与你共同
+完成这个项目,他们是非常优秀的工程师,不过之前用的是svn或者
+其他的工具,对git不熟,他们都可以出色的完成各自领域的工作,
+但是有时候会卡在git这里,你的目标是给出一些工作中常用的命令
+和建议,帮助他们度过git的熟悉期。
+
+---
+class: inverse
+
+## 约定 | git 配置
+
+    git config --list
+
+    配置个人信息
+    git config --global user.name duoduo
+    git config --global user.email duoduo3369@gmail.com
+
+    https方式长期存储密码(如果你git clone时用的https就非常有用)
+    git config --global credential.helper store
+
+    颜色(能开就开吧，请善待你的眼睛)
+    git config --global color.branch 'auto'
+    git config --global color.ui 'auto'
+    git config --global color.status 'auto'
+
+    编辑器(使用你最喜欢的编辑器编辑commit信息)
+    git config --global core.editor vim
+
+    配置友好的log(log应该是你最常用的git命令,可以装个tig)
+    git config --global alias.alog "log --all --decorate --graph --color"
+
+---
+class: inverse
+
+## git 配置 && 别名why not?
+
+### 对于一个懒人来说，对于一些每天要敲百十次的常用命令,git原始命令实在太长了，还容易敲错，来个别名吧。
+
+    git config --global alias.st 'status'
+    git config --global alias.co 'checkout'
+    git config --global alias.br branch
+    git config --global alias.cm commit
+
+---
+class: inverse
+
+# 项目开始
+
+### 原谅我把所有的项目放在一个git里面,这不科学
+
+    在gitlib上建立一个git项目, 把你的成员丢到这个项目里
+    面，添加相应权限
+
+### 在没有网络的情况(sorry 我的机器连不上wifi)下让我们模拟一下
+
+    mkdir -p /opt/git/xuetangx.git
+    cd /opt/git/xuetangx.git
+    git init --bare
+
+### ls看一下,这个文件夹,尝试用一些git命令, 有些时候你会得到这个回复
+    `fatal: This operation must be run in a work tree`
+
+---
+class: inverse
+
+## 概念1 本地 | 远程(服务器)
+
+    当你在gitlab上建一个项目的时候，毫无疑问gitlab的
+    这个项目是在服务器上的,这叫做一个远程仓库。
+    你无法对远程仓库的文件进行直接的修改。
+    想与远程仓库交互，只能用pull fetch push这几条命令。
+
+    所以`git init --bare`建立的就是一个远程仓库，即使是在你自己的机器上
+    (这时候你的机器就是一台提供git server的服务器)
+
+## 概念1是为了点明这一点
+
+### 想与远程仓库交互，只能用pull fetch push这几条命令。
+
+---
+class: inverse
+
+## 接下来 把gitlab的项目clone回本地
+
+    cd /opt/git
+    # 假设people 1
+    git clone /opt/git/xuetangx.git
+
+## 添加第一个commit
+第一个commit你可以丢这些东西, README, .gitignore, LICENSE
+
+.gitignore 忽略各种编译文件，根据网络状况考虑是否忽略某些依赖库(例如有的时候bower很慢),建议开始的时候就把编译的各种二进制中间文件丢进去,
+例如.pyc .class, 否则这些文件都会被git管理,后期你就会看到满屏幕都是这些文件的改动，更可怕的是当合并代码的时候这些二进制文件会出冲突,那就呵呵了
+
+    touch .gitignore
+    touch README
+    git add .gitignore
+    git add README
+    git cm
+    git alog
+    git push origin master
+    git alog
+
+---
+class: inverse
+## 场景 | 一次提交
+
+从上一次提交到下一次提交，一般做的事情是相同的。
+
+在你commit的时候一般都需要进行下面几步操作
+
+    git st # 查看是否还有修改
+    git diff # 查看还没staged(没有add)的diff
+    git diff --staged # 查看已经add的diff
+    git add 需要的文件
+    在看下git st
+    确定都是想要提交的东西
+    git cm # commit信息最好还是写全一点，毕竟以后主要是自己看的
+    git alog
+
+####关于log查看
+
+    HEAD master origin/master refs/stash
+    HEAD是指你当前是在哪一个commit的位置
+    master是指你本地的master分支 origin/master是只你本地缓存的服务器master分支
+    refs/stash是stash的一些log 可以忽略
+
+---
+class: inverse
+
+## 约定 | 分支命名
+
+必须有的两大分支 master | develop
+
+### master为稳定分支
+
+    也就是服务器的线上版本，运维的同学如果需要做回滚打tag一般在master
+    当develop上线成功后，将develop merge到master，并且打上tag
+    master分支一般是落后于develop分支的
+
+### develop开发中较为稳定的版本
+
+    每个合作者需要从develop切一条feature分支进行开发
+    当临近上线时将feature分支merge到develop
+    上线成功则删掉个人的feature分支
+
+### feature/xxx 个人开发的特性分支
+
+    当有新的功能需要开发时,从最新的develop分支切一条新feature分支出来进
+    行开发,如果需要别人开发的新特性,那么就在这个feature pull别人的分支
+
+---
+class: inverse
+## 来看一个场景 | 同时处理两件事情
+
+首先搞三个分支出来
+
+    git br --all
+    git co -b develop
+    git co -b feature/test
+
+在feature/test分支上commit几次，push到服务器
+
+这个时候,突然你又有另一个任务需要完成，但是feature/test还没开发完，
+不能合并到develop,你应该从develop再切一个feature分支出来开发
+
+    git co develop
+    git pull origin develop
+    git co -b feature/online
+
+造几个commit,提交
+
+求翻页 -->
+
+---
+class: inverse
+## 场景 | 在feature分支上需要得到其他同学的代码
+
+例如你在feature/online分支工作了很久，这时候有同学在develop提交,
+这个同学的特性你需要用在你之后的feature/online开发中用到
+
+安全的做法
+
+    git co develop
+    git pull origin develop
+    git co feature/online
+    git co -b mirror
+    git merge develop
+    # 一波解决冲突后
+    git co feature/online
+    git merge mirror
+
+---
+class: inverse
+## 概念2 | git 命令的语义
+
+git命令是有语义的, 理解这个很多命令就不会用错
+
+提问环节, 下面这两个是什么意思？
+
+    git pull origin master:m1
+    git push origin master:m2
+
+: 语义 从哪儿到哪儿, :左边的就是从哪里，:右边的就是到哪里
+
+pull 语义: 拉分支,从服务的什么分支，拉倒本地的什么分支并且合并**当前**分支
+
+push 语义: 推分支,从本地分支推到服务器的什么分支
+
+fetch 语义: 抓分支,从服务的什么分支，抓到本地的什么分支
+
+如果忽略:右面的分支名，则默认右边为当前分支
+
+## 理解语义这个概念就不会搞反git操作的命令，并且可以理解git的其他命令
+
+---
+class: inverse
+## 场景 | 将一条新分支抓回本地, 或者将分支push到服务器
+
+例如你在feature/online分支，这时候小伙伴提交了一个新的分支feature/front
+你需要将这个分支抓回本地
+
+    # 你可能想用, 但是pull这个命令实际上是另外的意思
+    git pull origin feature/front:feature/front
+    # 应该用fetch
+    git fetch origin feature/front:feature/front
+
+### pull = 完整的fetch + merge本地分支
+
+有意思的是提交新分支到服务器可以不用写后面的分支名，回想下语义的概念
+
+    git push origin feature/front
+
+求翻页 -->
+
+---
+class: inverse
+## 场景 | 你在一个分支工作到一半，需要查看其它分支代码
+
+你在feature/online分支进行和很多修改，但是都是半成品，还
+没到commit的时候，这时候因为某些原因你需要切到别的分支去
+你不想丢失掉你现在工作的东西，并且也不想commit
+
+你想做的是将这些修改暂存起来，等切回来之后接着用这些修改
+
+    git stash
+    git co 其它分支
+    # 所有事情搞好后
+    git co feature/online
+    git stash pop 或者 git stash apply
+
+---
+class: inverse
+## 场景 | 有的时候你需要丢弃一些东西
+
+你在feature/online分支工作的很开心，在一次commit之后又进行了
+很多修改，但是突然你发现这些修改的思路是错的，改动都是垃圾应该
+丢到
+
+方案1
+
+    git add 所有的修改
+    git cm
+    git reset HEAD^ --hard
+
+方案2
+
+    git stash
+    git stash drop
+
+---
+class: inverse
+## 场景 | 查看一个文件的变更记录
+
+有的时候某个文件不只是你自己写的，需要别人的帮助时需要看看有谁
+操作过这个文件.
+
+    git log 文件
+
+或者有的时候你的文件被别人修改了，你想知道文件的某一行是谁改的。
+git会记录你的一举一动, 如果做了不好的事情, 所以不要抵赖了。
+
+    git blame 文件
+
+
+求翻页 -->
+
+---
+class: inverse
+## 删除分支
+
+删除本地分支
+
+    git br -d 分支名
+    # 如果还没合并
+    git br -D 分支名
+
+删除远程分支
+
+    git push --delete origin 分支名
+
+如果远程分支已经不存在了，删除本地缓存的remote分支
+
+    git fetch -p
+
+---
+class: inverse
+## 场景 | 查看文件差异diff
+
+两个文件有差异，而且是不同分支，或者不同commit或者没有commit，使用git diff查看
+
+    # 查看所有diff,与上个commit比(没add)
+    git diff
+    # 查看所有diff,与上个commit比(add到暂存区的)
+    git diff --staged
+    # 查看feature/online分支与当前test.py文件的差异
+    git diff feature/online test.py
+    # 查看develop与feature/online分支test.py文件的差异(顺序不同有差异)
+    git diff develop..feature/online test.py
+    # commit号的diff同理
+
+---
+class: inverse
+## 概念 | 文件的状态
+
+###这一页来自Pro Git原文
+
+对于任何一个文件,在Git内都只有三种状态：
+
+    已提交(committed),已修改(modified)和已暂存(staged)
+    已提交表示该文件已经被安全地保存在本地数据库中了
+    已修改表示修改了某个文件,但还没有提交保存
+    已暂存表示把已修改的文件放在下次提交时要保存的清单中。
+
+    由此我们看到Git管理项目时,文件流转的三个工作区域：
+    Git 的工作目录,暂存区域,以及本地仓库。
+
+## 理解文件状态就可以很好的理解某些命令。
+
+---
+class: inverse
+##场景 | 文件恢复
+
+你对一个文件做了修改，但是后悔了想要恢复这个文件
+
+仔细看命令行，有提示
+
+    # 没有add
+    git co -- 文件名
+    # add后,注意这样仅仅是把文件丢到出了暂存区
+    # 还需要co一次
+    git reset HEAD 文件名
+
+求翻页 -->
+
+---
+class: middle, inverse, center
+
+![git](./img/git.png)
+
+# 造坑指南
+### 如果你不理解，最好不要用，有坑
+
+---
+class: inverse
+## 约定 | 不要这样做
+
+### 不要强推公共分支
+
+    # 即使团队其他成员使用pull --rebase来拉代码
+    git push -f origin develop
+
+遵循这条约定很自然的就明白rebase只能在自己分支上玩
+
+### 不要add .
+
+这是一种习惯，一旦养成你又不知道怎么恢复，到时候会很麻烦的
+
+### 不要不备份就执行危险操作
+
+merge, pull, rebase前先建mirror
+
+---
+class: inverse
+## 场景 | 有一个配置文件，你只想提交一小部分修改
+
+有的时候有些配置文件的选项是在你个人测试机上才开启的，不应该
+提交到共有git里面, 但是每次改这个配置文件都要改这几行比较蛋疼
+有一种方法可以仅仅提交一个文件里面的一段或几段
+
+    git add -p 文件
+
+    git add -i #然后根据提示操作
+
+求翻页 -->
+
+---
+class: inverse
+## 场景 | merge的时候没有备份，结果merge失败，想要回到merge前的点
+
+例如在feature/online分支merge develop时,自己处理比较混乱，merge失败，
+现在feature/online这个分支就像出了车祸一样被打成了筛子,现在想最快的
+将feature/online回到合并前的位置
+
+    git alog # 找到合并前的commit, 例如832asdf32j
+    git co 832asdf32j
+    # branch -f 强制把某分支的指针指到哪里
+    git br -f feature/online
+    git co feature/online
+
+---
+class: inverse
+## 场景 | merge的log太难看了，我要直线
+
+例如当你在feature/online开发结束后要合并到develop，或者要拿develop新
+特性时，如果厌烦了merge的log合并图(non-fast-forwards)
+
+fast-forwards指有直接从属关系(log --graph上是一条直线)的分支
+
+    ——————*——————*——————*——————  # fast-forwards 一条直线
+
+             —————*——
+            /               \
+    ————*——— ——*————————*——    # none fast-forwards
+
+    # 拿到develop最新代码
+    git co develop
+    git pull origin develop
+    git co feature/online
+    git co -b mirror # 只是备份
+    git co feature/online
+    git rebase develop
+    # 根据提示rebase成功后,删除mirror
+    # 失败则直接用mirror回到feature/online
+
+注意rebase解决冲突的时候不能commit,应该add后rebase --continue
+
+---
+class: inverse
+## 场景 | fixbug分支和摘樱桃
+
+有时候你的代码会有bug(all the time~), 你需要建一条fixbug分支来修复bug,
+如果你是喜欢用print打印调试的人，并且想在最终调试结束后所有commit都没有
+用过print,你可能用到cherry-pick摘樱桃。
+
+    git co -b fix/online
+    # 进行一些操作，commit...得到最终解决bug的版本, 例如版本号为xa2ad3
+
+    git co feature/online
+    git cherry-pick xa2ad3
+
+
+---
+class: center, middle, inverse
+# Q &amp; A
+---
+class: center, middle, inverse
+## 联系方式
+
+### GitHub: [duoduo3369](https://github.com/duoduo369)
+
+### Gmail: [duoduo3369@gmail.com](mailto:duoduo3369@gmail.com)
+
+---
+class: center, middle, inverse
+# 谢谢大家
+#### Made in [Remark](http://remarkjs.com)
+    </textarea>
+    <script src="js/remark.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create({
+        highlightStyle: 'monokai',
+        highlightLanguage: 'remark'
+      });
+    </script>
+  </body>
+</html>
