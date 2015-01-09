@@ -382,6 +382,15 @@ class: inverse
 
 求翻页 -->
 
+
+---
+class: center, middle, inverse
+
+# Github和Gitlab简介
+### 求有网
+![github](./img/github.png)
+![gitlab](./img/gitlab.png)
+
 ---
 class: middle, inverse, center
 
@@ -496,11 +505,16 @@ class: center, middle, inverse
 #### Made in [Remark](http://remarkjs.com)
     </textarea>
     <script src="js/remark.min.js" type="text/javascript"></script>
+    <script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>    
     <script type="text/javascript">
-      var slideshow = remark.create({
-        highlightStyle: 'monokai',
-        highlightLanguage: 'remark'
-      });
+    $( document ).ready(function() {
+        var slideshow = remark.create({
+           highlightStyle: 'monokai',
+           highlightLanguage: 'remark'
+        });
+        $('img[alt=github]').width('300');
+        $('img[alt=gitlab]').width('300');
+    });
     </script>
   </body>
 </html>
