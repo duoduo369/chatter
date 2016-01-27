@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>python奇淫巧计</title>
+    <title>python乱弹</title>
     <link rel="stylesheet" href="css/default.css" media="screen">
   </head>
   <body>
@@ -18,139 +18,550 @@ class: middle, inverse, center
 |_|    |___/                     _
 ```
 
-# python奇淫巧计
+# 乱弹
 ### Yang Yang
-2016.1
+2014.8.13
 #### Made in [Remark](http://remarkjs.com)
+---
+class: middle, inverse, center
+
+# First...
 
 ---
 class: middle, inverse, center
 
-# Idiomatic Python
+# 让我们先说说Git
 ---
 class:  inverse
 
+## 第一件事情，搞清楚你文件的状态
+### 为什么有的时候不能checkout到其他分支？提交前你修改了哪些文件？修改了什么？
 ```
-当你的代码写了一段时间后，你已经灵巧掌握了pylint，
-知道写代码要遵循pep8，知道python的语法,
-但是有点时候感觉写代码怪怪的，有一种说不出的感觉。
-不优美，或者说不pythonic。
+untracked      unmodified      modified      staged
+           add     -->    edit    -->    add
+                         <--           commit
+
+---------------------- git status -----------------------
+                       git diff         git diff --staged
+      git checkout
+                                     git stash
+```
+---
+class: inverse
+## 如何恢复？
+### 版本控制的主要目的就是你可以随时找到某一个点的代码，因此在用git命令前你应该知道怎么恢复原来的现场。注意看git status的提示
+```
+untracked 状态完全没有恢复命令
+unmodified 状态
+  当你修改了某个文件，后悔了:
+    1. 没有add,git co -- 文件
+       可以将此文件恢复到unmodified的状态
+    2. 已经add,git reset HEAD 文件
+       可以将此文件恢复到unmodified的状态
+  当你修改了一堆文件，并且都不想要了,或者临时
+  需要一个干净的状态(为了切分支容易么)
+    1. 先git add 这些文件
+    2. git stash
+       stash的东西可以随时git stash apply回来
+  不小心提交了或者有目的的故意提交了一些垃圾(为了删除)
+    git reset HEAD^ --hard
+
 ```
 
-    >>> import this
-
-    Beautiful is better than ugly.
-    Explicit is better than implicit.
-    Simple is better than complex.
-    Complex is better than complicated.
-    Flat is better than nested.
-    Sparse is better than dense.
-    Readability counts.
-    ...
 
 ---
 class:  inverse
+## 什么时候该切分支?怎么切分支？
+### 1. 开发新特性, 修bug时，总之是一项新任务, 没人跟你抢
+### 2. 合代码，此时切分支是为了备份你正确的状态，毕竟合代码是很蛋疼的事情。对于强迫症状患者，应该在任何一次merge, rebase前切分支
+### 3. 拉代码，需要分支上最新特性(实际上也是合代码).
+
+---
+class:  inverse
+## 插播git log
+### 查log一般发生于你想合代码的时候
+### 这又是一件频繁的事情，就像git status,git diff一样.装一个tig吧亲，不装的话使用这条命令
+```
+git log --decorate --graph --color
+配置到git config里面去就直接git alog了
+alias.alog=log --decorate --graph --color
+```
+### 这条命令是让你可以直接查看commit的一种树形结构(对于某些图不要被吓到).
+```
+git log -p commit code前几位直接查看某commit
+```
+---
+class:  inverse
+## 关于怎么切, 怎么合
+```
+新分支 git checkout -b xxx
+最好不要直接在你的分支上pull, pull == fetch + merge
+```
+## 合代码的流程
+```
+1. git fetch origin
+2. git co xxx分支(你想合并的本地分支)
+3. git checkout -b mirror(新建分支随便搞)
+4. 这一步可以不一样
+   git merge origin/xxx
+   git rebase origin/xxx
+对于有强迫症的人来说，强烈建议使用git rebase
+你的代码永远是一条fastforward的直线，美啊
+```
+---
+class: inverse
+
+## 更简单的用法
+```
+1. git co xxx分支(你想合并的本地分支)
+2. git checkout -b mirror(新建分支随便搞)
+3. git pull origin xxx
+   git pull --rebase origin xxx
 
 ```
-个人感觉pythonic只需要从下面几个点出发：
+---
+class: inverse
+## 神奇的rebase和cherry-pick
+
+### 这两个都是commit级别的命令, 为合代码提供了非常灵活的特性,尤其是当你merge出现一些神奇的错误时，rebase一般可以救命。
+
+### rebase是一个神奇的命令，他可以让你重写你的提交记录， 与git commit --amend不同的地方是他可以重写任何commit,这个特性使得rebase拥有了一个灵活天赋，他可以将你的commit graph改写为一种直线的状态
+
+### cherry-pick(摘樱桃), cherry-pick与rebase有相似之处(rebase 在交互模式中可以实现一些cherry-pick的功能),除了在为开源项目合代码的时候，平时开发时在修bug时非常好用。
+
+---
+class: inverse
+## rebase不是万能的,何时不用rebase?
+### rebase使情况
+```
+1. 没有提交过的分支
+2. 提交了但是确定只有你一个人搞的分支
+```
+## 万万不能用的情况
+### 一个多人合作的分支，更改已经push到服务器里面的commit,然后强推
+
+## 万一远程分支被rebase后又强推了怎么办？
+```
+git pull --rebase可以帮你解决这种蛋疼的问题
+```
+---
+class: inverse
+## 其他一些有用但是没扯到的东西
+```
+1. git的交互模式:add -i, rebase -i
+2. git的钩子:.git/hooks一些脚本(服务器端可以自动部署,阻止提交等)
+3. 短命令配置:git config将常用命令配短
+4. oh-my-zsh:方便的查看分支以及当前状态
+```
+##推荐链接
+#### [Pro Git(git的圣经啊)](http://git.oschina.net/progit/)
+#### [新手入门(推荐)](http://gitimmersion.com/lab_01.html)
+#### [GitBestPractices(动画版进阶)](http://sethrobertson.github.io/GitBestPractices/)
+#### [git-flow备忘清单(只建议看图，不建议用git flow)](http://danielkummer.github.io/git-flow-cheatsheet/index.zh_CN.html)
+---
+class: middle, inverse, center
+
+# 社交网站Github的
+# 着重玩法
+---
+class: inverse
+## 你知道自己github主页里面各个星星点点代表的含义么？
+```
+Popular repositories: 自己的项目，已star,fork,follow排序
+Repositories contributed to: 你贡献过的项目
+排序规则比较特殊，以类别、时间、贡献度
+Contributions：个人的提交勤奋度
+```
+## 如何为开源项目做贡献？
+### 除了提交代码之外，新建一个issue, 提pull request都可以算作github上对其他项目做的贡献,这些贡献都会显示在你个人主页的Repositories contributed to部分而提交代码必须放在github项目的default分支上或者gh-pages分支上(自己项目计算commit也是这样)
+fork --> change --> commit --> pull request
+---
+class: inverse
+## 如何科学的向项目提pull request?
+### rebase最新的develop或者master分支再提pull request
+## 如何根据pull request科学的合并代码？
+### 根据pull request提交的log分支点,cherry-pick提交者的commit,有冲突直接驳回让开发者解决冲突重新提pull request
+
+---
+class: inverse
+## 可以玩的:
+### Explore: Trending
+### github的search分为项目内search和全站search
+### 各种awesome系列
+### 把一些提升自己效率的东西搞上去(各种配置，笔记等)
+---
+class: middle, inverse, center
+
+# 让我们回到
+## 可爱的python这边
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+  ### 关键词
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+  ## Idiomatic
+  ## [Transforming Code into Beautiful, Idiomatic Python](http://pan.baidu.com/s/1ntiGAff)
+]
+---
+class: middle, inverse
+
+.left-column[
+  ### 新人习题
+  ### 常读常新
+  ### 你需要..
+  ### 关键词
+  ### 邮件列表
+]
+.right-column[
+  ## [python koans](https://github.com/gregmalcolm/python_koans)
+  ## python之禅，python八荣八耻, PEP8
+  ## ipython, pip, virtualenv (pylint, autopep8)
+  ## Idiomatic
+  ## [Transforming Code into Beautiful, Idiomatic Python](http://pan.baidu.com/s/1ntiGAff)
+  ## Pycoder's Weekly
+]
+---
+class: middle, inverse, center
+
+# 字符串吧啦吧啦
+---
+class: inverse
+## 字符串格式化, 是时候抛弃%语法了
+### [PEP3101 Advanced String Formatting](http://legacy.python.org/dev/peps/pep-3101/)
+
+```
+>>> "{}".format('a') # 类似 %s的用法
+'a'
+>>> "{key}={value}".format(key="a", value=10) # 使用命名参数
+'a=10'
+>>> "[{0:<10}], [{0:^10}], [{0:*>10}]".format("a") # 左中右对⻬
+'[a         ], [    a     ], [*********a]'
+>>> "{0.platform}".format(sys) # 成员, 属性
+'darwin'
+>>> "{0[a]}".format(dict(a=10, b=20)) # 字典
+'10'
+>>> "{0[5]}".format(range(10)) # 列表
+'5'
+>>> "My name is {0} :-{{}}".format('Fred') # 真得想显示{},需要双{}
+'My name is Fred :-{}'
+>>> "Today is: {0:%a %b %d %H:%M:%S %Y}".format(datetime.now())
+'Today is: Mon Mar 31 23:59:34 2014'
+
+```
+---
+class: middle, inverse, center
+
+# 使用合适的数据结构
+---
+class: middle, inverse, center
+
+## list, set, dict, deque该如何选择？
+
+### [python数据结构时间复杂度](https://wiki.python.org/moin/TimeComplexity)
+
+---
+class: middle, inverse
+
+## 各种解析
+```
+>>> l = [i for i in xrange(100)] # 列表解析
+
+>>> s = {i for i in xrange(100)} # set解析
+
+>>> d = {i:i for i in xrange(100)} # 字典解析
 ```
 
-## 1. 更省内存
-## 2. 不写成C，java，而是用python
-## 3. 各种奇淫巧计
-
+### 理论上XX解析都可以替换map, reduce, filter, XX解析在简单的情况下可读性更好
+### 如果逻辑复杂，不要把这段逻辑写成XX解析，分行写
 ---
 class: inverse
-
-## 能用生成器的地方请使用生成器
-
-    for i in [0, 1, 2, 3, 4, 5]:
-      print i**2
-
-    for i in range(6):
-      print i**2
-    # 生成器
-    for i in xrange(6):
-      print i**2
-
-    d = {'matthew': 'blue', 'rachel': 'green', 'raymond':'red'}
-
-    for k in d:
-        print k, '-->', d[k]
-
-    for k, v in d.items():
-        print k, '-->', v
-    # 生成器
-    for k, v in d.iteritems():
-        print k, '-->', v
-
----
-class: inverse
-
-## 不要写成C、java
-
-    colors = ['red', 'green', 'blue', 'yellow']
-    # for each
-    for i in range(len(colors)):
-        print colors[i]
-
-    for color in colors:
-        print color
-    # 逆序 for each
-    for i in range(len(colors)-1, -1, -1):
-        print colors[i]
-
-    for color in reversed(colors):
-        print color
-    # 需要下标
-    for i in range(len(colors)):
-        print i, '-->', colors[i]
-    # 生成器
-    for i, color in enumerate(colors):
-        print i, '-->', color
-
----
-class: inverse
-
-## 排序
+## 列表去重
 ```
-python的排序基本只有一个解 sorted
-复杂数据结构主要是思考key怎么写
+>>> l = [1, 2, 2, 3, 3, 3]
+>>> {}.fromkeys(l).keys()
+[1, 2, 3] # 列表去重(1)
+>>> list(set(l)) # 列表去重(2), 个人推荐 Readability counts.
+[1, 2, 3]
+```
+---
+class: inverse
+## 操作字典
+
+```
+>>> sorted(d.iteritems(), key=itemgetter(1), reverse=True)
+# 字典按照值排序 PEP 265
+[('b', 23), ('d', 17), ('c', 5), ('a', 2), ('e', 1)]
+>>> dict((["a", 1], ["b", 2])) # 用两个序列类型构造dict
+{'a': 1, 'b': 2}
+>>> dict.fromkeys("abc", 1) # 用序列做 key,并提供默认 value
+{'a': 1, 'c': 1, 'b': 1}
+>>> {k:v for k, v in zip("abc", range(3))} # 字典解析
+{'a': 0, 'c': 2, 'b': 1}
+>>> d = {"a":1, "b":2}
+>>> d.get("c", 200) # key 不存在,直接返回 default值
+200
+>>> d
+{'a': 1, 'c': 200, 'b': 2}
+>>> d.setdefault("c", 200) # key 不存在,先设置,后返回
+200
+>>> d
+{'a': 1, 'c': 200, 'b': 2}
+```
+---
+class: inverse
+## 字典视图
+
+```
+>>> d1 = dict(a = 1, b = 2)
+>>> d2 = dict(b = 2, c = 3)
+>>> d1 & d2 # 字典不支持该操作
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+TypeError: unsupported operand type(s) for &: 'dict' and 'dict'
+>>> v1 = d1.viewitems()
+>>> v2 = d2.viewitems()
+>>> v1 & v2 # 交集
+set([('b', 2)])
+>>> dict(v1 & v2) # 可以转化为字典
+{'b': 2}
+>>> v1 | v2 # 并集
+set([('a', 1), ('b', 2), ('c', 3)])
+>>> v1 - v2 #差集(仅v1有,v2没有的)
+set([('a', 1)])
+>>> v1 ^ v2 # 对称差集 (不会同时出现在 v1 和 v2 中)
+set([('a', 1), ('c', 3)])
+>>> ('a', 1) in v1 #判断
+True
+```
+---
+class: inverse
+## python里面class和function都是一等公民
+### 这个属性可以避免很多if else判断，或者做一个template
+```
+MAPPER ={
+  'condition1': func1,
+  'condition2': func2
+}
+
+def run(condition, mapper=MAPPER):
+    func = MAPPER[condition]
+    return func()
+
+def hook(mapper=MAPPER):
+    for conditon, func in MAPPER:
+        func()
 ```
 
-    colors = ['red', 'green', 'blue', 'yellow']
-    d = {'matthew': 'blue', 'rachel': 'green', 'raymond':'red'}
+---
+class: middle, inverse, center
 
-    def compare_length(c1, c2):
-        if len(c1) < len(c2): return -1
-        if len(c1) > len(c2): return 1
-        return 0
-
-    print sorted(colors, cmp=compare_length)
-    print sorted(colors, key=len)
-
-    # python按value排序 https://www.python.org/dev/peps/pep-0265/
-
-    sorted(d.iteritems(), key=itemgetter(1), reverse=True)
-    #sorted(d.iteritems(), key=lambda x: x[1], reverse=True)
-    ## 提问: sorted中cmp 与 key的区别
+# 某些开源项目里面有些奇怪的东西
+## \_\_future\_\_
 ---
 class: inverse
-## 拒绝三明治代码, with, yield
+### from \_\_future\_\_ import unicode_literals
+```
+>>> s = '美的'
+>>> s
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> from __future__ import unicode_literals
+>>> s = '美的'
+>>> s
+u'\u7f8e\u7684'
+>>> s.encode('utf-8')
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> s = b'美的'
+>>> s
+'\xe7\xbe\x8e\xe7\x9a\x84'
+>>> type(s)
+<type 'str'>
+```
+---
+class: inverse
+### from \_\_future\_\_ import absolute_import
+### 不是支持了绝对引入,而是拒绝隐式引入
+```
+$cat for_absolute_import/string.py
+a = 1
+$cat for_absolute_import/main.py
+import string # 其实我们要的是当前目录下的string模块
+>>> from for_absolute_import.main import string
+>>> string # 是隐式引入的
+<module 'for_absolute_import.string' from 'for_absolute_import/string.py'>
+>>> 1
+1
+## 我来修改下
+$cat for_absolute_import/main.py
+from __future__ import absolute_import
+import string
+>>> from for_absolute_import.main import string
+>>> string # 看这里其实还是在用string模块
+<module 'string' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/string.pyc'>
+```
+---
+class: inverse
+## 我靠,我的需求呢? -- 在很多开源项目是拒绝你的隐式用法的,
+## 比如celery
+## 来点标准做法:
+```
+from __future__ import absolute_import
+from .string import a # 比较常用的风格
+from for_absolute_import.string import a
+# 官方推荐的风格,强烈建议这样的风格
+```
+---
+class: middle, inverse, center
 
-    try:
-        f = open('./test.txt')
-        data = f.read()
-    except Exception as ex:
-        print ex
-    finally:
-        f.close()
-
-    with open('./test.txt') as f:
-        data = f.read()
+# 神奇的yield
 
 ---
 class: inverse
+## 生成器
+
+```
+>>> class Data(object):
+...     def __init__(self, *args):
+...         self._data = list(args)
+...     def __iter__(self):
+...         for x in self._data:
+...             yield x
+...
+>>> d = Data(1, 2, 3)
+>>> for x in d:
+...     print(x)
+...
+1
+2
+3
+>>> (i for i in [1,2,3]) # 这是生成器表达式
+<generator object <genexpr> at 0x10657a640>
+```
+---
+class: inverse
+## 斐波那契数列
+
+```
+>>> import itertools
+>>>
+>>> def fib():
+...     a, b = 0, 1
+...     while 1:
+...         yield b
+...         a, b = b, a + b
+...
+>>>
+>>> print list(itertools.islice(fib(), 10))
+[1, 1, 2, 3, 5, 8, 13, 21, 34, 55]
+```
+---
+class: inverse
+## 关于协程, 个人的一些理解
+### 线程和进程的控制权是操作系统级别, 协程则是程序员级别
+```
+并发：1 CPU 多进程
+并行：多 CPU 多进程
+线程: 1进程 多线程
+协程：单线程搞一些异步, 没有进程线程切换开销
+```
+python由于存在GIL(全局解释器锁)，多线程是一件比较蛋疼的事情，
+一般是采用多进程和协程的方式来做一些分流。
+
+### 个人感觉协程主要用在一些无尽的事件中,尤其是存在IO阻塞的时候, 包括打log, 服务器等待request, 斐波那契
+---
+class: inverse
+## 其实yield和协程关系很密切
+
+```
+>>> def coroutine():
+...     print "coroutine start..."
+...     result = None
+...     while True:
+...         s = yield result
+...         result = 'result: {}'.format(s)
+...
+>>> c = coroutine() # 函数返回协程对象
+>>> c.send(None) # 使用 send(None) 或 next() 启动协程
+coroutine start...
+>>> c.send("first") # 向协程发送消息,使其恢复执⾏
+'result: first'
+>>> c.send("second")
+'result: second'
+>>> c.close() # 关闭协程,使其退出。或用c.throw() 使其引发异常
+>>> c.send("never recv")
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+StopIteration
+```
+---
+class: middle, inverse, center
+
+# 拒绝三明治代码
+## 上下文管理器
+
+---
+class: inverse
+## 实现一个with上下文管理类(自动关闭mongodb连接)
+```
+>>> import pymongo
+>>> class Operation(object):
+...     def __init__(self, database,
+...                  host='localhost', port=27017):
+...         self._db = pymongo.MongoClient(
+...                       host, port)[database]
+...     def __enter__(self):
+...         return self._db
+...     def __exit__(self, exc_type, exc_val, exc_tb):
+...         self._db.connection.disconnect()
+...
+>>> with Operation(database='test') as db:
+...     print db.test.find_one()
+...
+{u'a': 0.9075717522597431, u'_id': ObjectId('52e0da5cc23e7dbdb0a1ec36')}
+```
+---
+class: inverse
+## 看到这里, 就得说说contextmanager
 ### 官方文档如下
 ```
 @contextlib.contextmanager
@@ -163,6 +574,7 @@ def some_generator(<arguments>):
 with some_generator(<arguments>) as <variable>:
     <body>
 ```
+
 也就是:
 
 ```
@@ -175,220 +587,342 @@ with some_generator(<arguments>) as <variable>:
 ```
 ---
 class: inverse
-## 我写过的某个脚本
-
-    @contextmanager
-    def init_mysql():
-        con = mdb.connect('mysql.xuetangx.info', 'edxapp001', 'password', 'edxapp')
-        con.set_character_set('utf8')
-
-        with con:
-            cur = con.cursor(mdb.cursors.DictCursor)
-            cur.execute("set names utf8;")
-            cur.execute('SET CHARACTER SET utf8;')
-            cur.execute('SET character_set_connection=utf8;')
-            yield (con, cur)
-
-    with init_mysql() as mysql_tuple:
-        con, cur = mysql_tuple
-        ...
+## contextmanager例子(一)
+```
+>>> lock = threading.Lock()
+>>> @contextmanager
+... def openlock():
+...     print('Acquire')
+...     lock.acquire()
+...     yield
+...     print('Releasing')
+...     lock.release()
+... 
+>>> with openlock():
+...     print('Lock is locked: {}'.format(lock.locked()))
+...     print 'Do some stuff'
+... 
+Acquire
+Lock is locked: True
+Do some stuff
+Releasing
+```
 ---
 class: inverse
-## 用defaultdict简化复杂的判断逻辑
+## contextmanager例子(二) as
 ```
-例如我的又一个脚本, 我想根据省市区得到一个数据结构
+>>> @contextmanager
+... def operation(database, host='localhost', 
+				  port=27017):
+...     db = pymongo.MongoClient(host, port)[database]
+...     yield db
+...     db.connection.disconnect()
+... 
+>>> import pymongo
+>>> with operation('test') as db:
+...     print(db.test.find_one())
+... 
+{u'a': 0.9075717522597431, u'_id': ObjectId('52e0da5cc23e7dbdb0a1ec36')}
 ```
-    d = {
-      '云南': {
-        '丽江': ['古城区', '朗县'],
-        '保山': ['城关区']
-      },
-      '北京': {
-        '北京': ['东城区']
-      },
-      ...
-    }
-
 ---
 class: inverse
+## 包导入
+
 ```
-如果不用defaultdict要做很多的空逻辑判断，烦躁
+>>> import imp
+>>> f, filename, description = imp.find_module('sys')
+>>> sys = imp.load_module('sys', f, filename, description)
+>>> sys
+<module 'sys' (built-in)>
+>>> os = __import__('os')
+>>> os.path
+<module 'posixpath' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/posixpath.pyc'>
+>>> filename = "t.py"
+>>> f = open("t.py")
+>>> description = ('.py', 'U', 1)
+>>> t = imp.load_module('some', f, filename, description) # t就是`import t`后的结果
 ```
-
-    from collections import defaultdict
-    data = [
-      [u'北京', u'北京', u'东城区'],
-      [u'北京', u'北京', u'大兴区'],
-      [u'云南', u'丽江', u'古城区']
-    ]
-
-    provinces = defaultdict(lambda: defaultdict(lambda: []))
-
-    for each in data:
-        province, city, district = each
-        provinces[province][city].append(district)
-
 ---
 class: inverse
+## 包构建\_\_all\_\_
+
 ```
-计数统计的时候非常好用, 例如我要作词云统计单词
+因为 import 实际导⼊的是⺫标模块 globals 名字空间中的成员,
+那么就有⼀个问题: 模块也会导⼊其他模块,这些模块同样在⺫标模块
+的名字空间中. "import *" 操作时,所有这些一并被带入到当前模
+块中,造成一定程度的污染
+
+__all__ = ["add", "x"]
 ```
-    data = [
-      u'人生最奇妙的地方就在于，她的公平与无私。如果我们在前一段路途中就预支了幸福，后面一段，必定痛苦，如果我们在最开始就心怀感恩，冒雨前行，最终后半段的路途也会变得通达又平稳。',
-      u'有梦想的人不做选择题，只做证明题，所以，年轻的你，可以犯错，可以跌倒，但千万不要怀疑自己，也不要放弃梦想。去想去的地方，做该做的事情，不迟疑，不徘徊。2016，向自己承诺：从此刻开始，你做的每个选择，都让自己比现在快乐、充实。',
-      u'自嘲才是高端的幽默，揭别人短即使风趣也失了风度。',
-      ...
-    ]
-
-    count_data = defaultdict(int)
-
-    for line in data:
-        words = jieba.cut(line)
-        for word in words:
-            count_data[word] += 1
-
-    # 输出大体长这样
-    count_data = {
-      u'人': 10,
-      u'人生': 2,
-      ...
-    }
 ---
 class: inverse
-## 避免讨厌的if判断
-```
-有同学说if看起来特别整齐，特别赞，其实这种方式特别蛋疼,
-因为如果if不到，是需要判断所有分支的，慢，而且个人感觉这样很蛋疼
-```
-    class UserView(GenericAPIView):
+## \_\_slots\_\_ 大量属性时减少内存占用
+### python会在类中使用__dict__存储属性，当需要建造超多对象时，大大浪费内存,只在新式类中有效，继承的各种父类也必须有\_\_slots\_\_
 
-        def post(self, request, register_type, format=None):
-            '''create user, support tv, email, phone'''
-            if register_type == 'email':
-                user, profile, registration = 
-                    self.create_user_with_email(request, post_vars)
-            elif register_type == 'phone':
-                user, profile, registration = 
-                    self.create_user_with_phone(request, post_vars)
-            elif register_type == 'auto':
-                user, profile, registration = 
-                    self.create_tv_user(request, post_vars)
-            else:
-                user, profile, registration = 
-                    self.create_user_with_phone(request, post_vars)
-            ...
-
+```
+>>> class User(object):
+...     __slots__ = ("name", "age")
+...     def __init__(self, name, age):
+...         self.name = name
+...         self.age = age
+...
+>>> u = User("Dong", 28)
+>>> hasattr(u, "__dict__")
+False
+>>> u.title = "xxx"
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AttributeError: 'User' object has no attribute 'title'
+```
 ---
 class: inverse
-## 请使用dict
+## 装饰器
 
-    class UserView(GenericAPIView):
+### python的内置的装饰器语法非常漂亮的讲解了装饰者模式, 写装饰器时应该使用wraps后面会讲到。
 
-        def post(self, request, register_type, format=None):
-            '''create user, support tv, email, phone'''
-            handler_mapper = defaultdict(
-              lambda: self.create_user_with_phone)
-            handler_mapper.update({
-                'email': self.create_user_with_email,
-                'phone': self.create_user_with_phone,
-                'auto': self.create_tv_user,
-            })  
+```
+>>> def common(func):
+...     def _deco(*args, **kwargs):
+...         print 'args:', args
+...         return func(*args, **kwargs)
+...     return _deco
+...
+>>> @common
+... def test(p):
+...     print p
+...
+>>> test
+<function _deco at 0x10d996a28>
+>>> test(1)
+args: (1,)
+1
 
-            try:
-                user, profile, registration = handler_mapper[
-                    register_type](request, post_vars)
-            except:
-                ...
+```
 ---
 class: inverse
+## 带参数的装饰器
+平时写代码一般情况遇不到这种三层的东西，如果遇到变态的需求的时候一定要找个例子比着写。
 
-## python的各种解析
+```
+>>> def common(*args, **kw):
+...     a = args
+...     def _common(func):
+...         def _deco(*args, **kwargs):
+...             print 'args:', args, a
+...             return func(*args, **kwargs)
+...         return _deco
+...     return _common
+...
+>>> @common('c')
+... def test(p):
+...     print p
+...
+>>> test
+<function _deco at 0x10d99e5f0>
+>>> test(1)
+args: (1,) ('c',)
+1
 
-    python并不只有列表解析
-
-    列表解析 []
-    ---
-    c = [(i,j) for i,j in enumerate(range(5))]
-    ==> [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
-
-    字典解析 {key:value XXXX}
-    ---
-    c = {i:j for i,j in enumerate(range(5))}
-    ==> {0: 0, 1: 1, 2: 2, 3: 3, 4: 4}
-
-    集合解析 {value XXXX}
-    ---
-    c = {i for i,j in enumerate(range(5))}
-    ==> set([0, 1, 2, 3, 4])
+```
+---
+class: center, middle, inverse
+# 元类......
+## Metaclasses
 ---
 class: inverse
-## 一些不常用但是在某些情况下极为好用的东西
-```
-itemgetter, attrgetter -- sorted时可以方便的给key，
-当然你可以用lambda
+## 元类是什么
 
-groupby 数据库分组需求不满足时用这个分组，注意要先sort，
-而且key要相同
+### 对象是类的实例,类也是对象,类是元类的实例
 
-partial 当你构架写框架级别的或者是工具的东西的时候非常好用
 ```
-    from operator import itemgetter, attrgetter
-    from itertools import groupby
-    from functools import partial
+>>> class Myclass(): pass # 不要学我的写法
+>>> type(Myclass)
+<type 'classobj'>
+>>> class Myclass(object): pass
+>>> type(Myclass)
+<type 'type'>
+>>> type(type)
+<type 'type'>
+>>> class Myclass: # 对于这个例子,有没有括号都无所谓
+...     __metaclass__ = type
+>>> type(Myclass)
+<type 'type'>
+>>> print Myclass
+<class '__main__.Myclass'>
+>>> print Myclass()
+<__main__.Myclass object at 0x10d9ad190>
+```
 ---
 class: inverse
-## 乱七八糟的东西
-
-    isinstance可以判断多个类型
-    isinstance(obj,(type1,type2))
-    isinstance('duoduo',basestring)
-
-    当split的规则有多个时，使用re的split
-
-    tring = "the,rain;in,spain"
-    pattern = re.compile(',|;')
-    words = pattern.split(string)
-
-    with open两个或者多个文件
-
-    with open('a', 'w') as a, open('b', 'w') as b:
-        do_something()
-
+## 模拟生成一个类
+### 直接调type(少见, 因为本来就难理解..)
+```
+>>> def __init__(self, func):
+...     self.func = func
+>>> def hello(self):
+...     print 'hello world'
+>>> attrs = {'__init__': __init__, 'hello': hello}
+>>> bases = (object,)
+>>> Hello = type('Hello', bases, attrs)
+>>> h = Hello(lambda a, b=3: a + b)
+>>> h.hello()
+hello world
+# 其实等于下面的类
+class Hello(object):
+    def __init__(self, func):
+        self.func = func
+    def hello(self):
+        print 'hello world'
+```
 ---
 class: inverse
-## 坑爹的特性
-```
-同行间隔字符串会自动连接
-```
-    'Hello, world' == "Hello" ", " "world"
-    不同行的字符串也会链接
-    a = 'aabc'
-        'def'
+## 元类: \_\_metaclass\_\_(实现前面的Hello类)
 
-    a == 'aabcdef'
+```
+class HelloMeta(type): # 注意继承至type
+    def __new__(cls, name, bases, attrs):
+        def __init__(cls, func):
+            cls.func = func
+        def hello(cls):
+            print 'hello world'
+        t = type.__new__(cls, name, bases, attrs)
+        t.__init__ = __init__
+        t.hello = hello
+        return t # 要return创建的类哦
+
+class New_Hello(object):
+    __metaclass__ = HelloMeta
+```
 ---
 class: inverse
+## 元类一般用在对于生成的类有特殊需求的时候
+### 这种特殊的需求特殊到你并不想或者不能使用继承，因而故意去打破OOP
+### 因为元类可以写出一些极度动态灵活高深的代码
+## 简称神代码
+## MAGIC CODE(Only God known what's that for.)
+### 想知道为毛django model用可以用Meta这个字段么,因为他们用了元类,
+### check django下/db/models/base.py, grep搜一下__metaclass__
+---
+class: center, middle, inverse
+# 开发中可能用到的
+## 电池
+---
+class: inverse
+## 统计计数
 ```
-python里面各种蛋疼的事情还有很多,但是我懒得写了,例如
-
-1. 发布package到pypi
-2. 各种编码问题
-3. 各种诡异包的安装问题
-4. 各种脚本工具
-5. 各种网络的问题，html解析爬虫等等
-....
+collections.Counter
+collections.defaultdict(统计时及其常用)
+itertools.groupby
+# 注意使用前list需要先sort,而且keyfunc需要与groupby keyfunc相同
 ```
+## 排序
+```
+operator常用作sort中的key
+#sorted(inventory, key=operator.itemgetter(1))
+operator.itemgetter
+operator.attrgetter
+```
+## 列表左右pop,少见的需求
+```
+collections.deque
+```
+---
+class: inverse
+## 函数工具
+```
+functools.partial
+# 实用的工具函数，无论是python内置的方法还是 根据需求写出
+# 的各种方法，很多都会有超过3个的参数，实用partial可以非常
+# 科学的写出符合特定需求的代码，而且高大上的节奏
 
+functools.wraps
+# 在写装饰器的时候会丢掉__doc__,wraps把被封装函数的
+# __name__、module、__doc__和 __dict__都复制到封装函数去
+
+接受key函数的方法
+sorted(), min(), max(), heapq.nlargest(),
+heapq.nsmallest(), itertools.groupby()
+```
+---
+class: center, middle, inverse
+# 喜闻乐见的开发陷阱
+---
+class: inverse
+## 开发陷阱(一) 可变默认参数
+```
+>>> def append_to(element, to=[]):
+...     to.append(element)
+...     return to
+... 
+>>> my_list = append_to(12)
+>>> my_list
+[12]
+>>> my_other_list = append_to(42)
+>>> my_other_list
+[12, 42] # Oh, no~
+```
+### 原因: 函数创建是其to及创建(一次性的),以后调用都是操作这个列表
+```
+def append_to(element, to=None):
+    if to is None:
+        to = []
+    to.append(element)
+    return to
+```
+---
+class: inverse
+## 开发陷阱(二) 闭包变量绑定
+```
+>>> def create_multipliers():
+...     return [lambda x : i * x for i in range(5)]
+... 
+>>> for multiplier in create_multipliers():
+...     print multiplier(2)
+... 
+8
+8
+8
+8
+8
+### 看下面的例子
+>>> def create_multipliers():
+...     s = [lambda x : i * x for i in range(5)]
+...     print locals()['i']
+...     return s
+... 
+>>> create_multipliers()
+4 # 是的 i其实在循环后已经变成了常量4
+[<function <lambda> at 0x10b654b18>, <function <lambda> at 0x10b654b90>,
+<function <lambda> at 0x10b654c08>, <function <lambda> at 0x10b654c80>,
+<function <lambda> at 0x10b654de8>]
+```
+---
+class: inverse
+## 开发陷阱(二) 闭包应该的用法
+```
+>>> def create_multipliers():
+...     return [lambda x, i=i : i * x for i in range(5)]
+... 
+或者这样:
+from functools import partial
+from operator import mul
+
+def create_multipliers():
+    return [partial(mul, i) for i in range(5)]
+```
+---
+class: middle, inverse
+## python&&django&&git的一些积累
+### [git的一些实战](https://github.com/duoduo369/skill_issues/blob/master/git/git.issue.md)
+### [python实用语法](https://github.com/duoduo369/skill_issues/blob/master/python/python.issue.md)
+### [python实用工具](https://github.com/duoduo369/skill_issues/blob/master/python/python_tools.issue.md)
+### [django的一些解释](https://github.com/duoduo369/skill_issues/blob/master/python/django.issue.md)
+### [django_south_script](https://github.com/duoduo369/django_south_script)
+### [django_celery_demo](https://github.com/duoduo369/django_celery_demo)
+### [django_supervisor_gunicorn_demo](https://github.com/duoduo369/django_supervisor_gunicorn_demo)
 ---
 class: center, middle, inverse
 # Q &amp; A
----
-class: center, middle, inverse
-## To be continued.
----
-class: center, middle, inverse
-## 下一期：
-## Django或者RestFramework奇淫巧计
 ---
 class: center, middle, inverse
 ## 联系方式
