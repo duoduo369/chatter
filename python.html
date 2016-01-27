@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>python奇淫巧计</title>
+    <link rel="stylesheet" href="css/default.css" media="screen">
+  </head>
+  <body>
+    <textarea id="source">
+
+class: middle, inverse, center
+```
+             _   _              -
+ _ __  _   _| |_| |__   ___  _ __
+| '_ \| | | | __| '_ \ / _ \| '_ \
+ | |_) | |_| | |_| | | | (_) | | | |
+ | .__/ \__, |\__|_| |_|\___/|_| |_|
+|_|    |___/                     _
+```
+
+# python奇淫巧计
+### Yang Yang
+2016.1
+#### Made in [Remark](http://remarkjs.com)
+
+---
+class: middle, inverse, center
+
+# Idiomatic Python
+---
+class:  inverse
+
+```
+当你的代码写了一段时间后，你已经灵巧掌握了pylint，
+知道写代码要遵循pep8，知道python的语法,
+但是有点时候感觉写代码怪怪的，有一种说不出的感觉。
+不优美，或者说不pythonic。
+```
+
+    >>> import this
+
+    Beautiful is better than ugly.
+    Explicit is better than implicit.
+    Simple is better than complex.
+    Complex is better than complicated.
+    Flat is better than nested.
+    Sparse is better than dense.
+    Readability counts.
+    ...
+
+---
+class:  inverse
+
+```
+个人感觉pythonic只需要从下面几个点出发：
+```
+
+## 1. 更省内存
+## 2. 不写成C，java，而是用python
+## 3. 各种奇淫巧计
+
+---
+class: inverse
+
+## 能用生成器的地方请使用生成器
+
+    for i in [0, 1, 2, 3, 4, 5]:
+      print i**2
+
+    for i in range(6):
+      print i**2
+    # 生成器
+    for i in xrange(6):
+      print i**2
+
+    d = {'matthew': 'blue', 'rachel': 'green', 'raymond':'red'}
+
+    for k in d:
+        print k, '-->', d[k]
+
+    for k, v in d.items():
+        print k, '-->', v
+    # 生成器
+    for k, v in d.iteritems():
+        print k, '-->', v
+
+---
+class: inverse
+
+## 不要写成C、java
+
+    colors = ['red', 'green', 'blue', 'yellow']
+    # for each
+    for i in range(len(colors)):
+        print colors[i]
+
+    for color in colors:
+        print color
+    # 逆序 for each
+    for i in range(len(colors)-1, -1, -1):
+        print colors[i]
+
+    for color in reversed(colors):
+        print color
+    # 需要下标
+    for i in range(len(colors)):
+        print i, '-->', colors[i]
+    # 生成器
+    for i, color in enumerate(colors):
+        print i, '-->', color
+
+---
+class: inverse
+
+## 排序
+```
+python的排序基本只有一个解 sorted
+复杂数据结构主要是思考key怎么写
+```
+
+    colors = ['red', 'green', 'blue', 'yellow']
+    d = {'matthew': 'blue', 'rachel': 'green', 'raymond':'red'}
+
+    def compare_length(c1, c2):
+        if len(c1) < len(c2): return -1
+        if len(c1) > len(c2): return 1
+        return 0
+
+    print sorted(colors, cmp=compare_length)
+    print sorted(colors, key=len)
+
+    # python按value排序 https://www.python.org/dev/peps/pep-0265/
+
+    sorted(d.iteritems(), key=itemgetter(1), reverse=True)
+    #sorted(d.iteritems(), key=lambda x: x[1], reverse=True)
+    ## 提问: sorted中cmp 与 key的区别
+---
+class: inverse
+## 拒绝三明治代码, with, yield
+
+    try:
+        f = open('./test.txt')
+        data = f.read()
+    except Exception as ex:
+        print ex
+    finally:
+        f.close()
+
+    with open('./test.txt') as f:
+        data = f.read()
+
+---
+class: inverse
+### 官方文档如下
+```
+@contextlib.contextmanager
+def some_generator(<arguments>):
+    <setup>
+    try:
+        yield <value>
+    finally:
+        <cleanup>
+with some_generator(<arguments>) as <variable>:
+    <body>
+```
+也就是:
+
+```
+    <setup>
+    try:
+        <variable> = <value>
+        <body>
+    finally:
+        <cleanup>
+```
+---
+class: inverse
+## 我写过的某个脚本
+
+    @contextmanager
+    def init_mysql():
+        con = mdb.connect('mysql.xuetangx.info', 'edxapp001', 'password', 'edxapp')
+        con.set_character_set('utf8')
+
+        with con:
+            cur = con.cursor(mdb.cursors.DictCursor)
+            cur.execute("set names utf8;")
+            cur.execute('SET CHARACTER SET utf8;')
+            cur.execute('SET character_set_connection=utf8;')
+            yield (con, cur)
+
+    with init_mysql() as mysql_tuple:
+        con, cur = mysql_tuple
+        ...
+---
+class: inverse
+## 用defaultdict简化复杂的判断逻辑
+```
+例如我的又一个脚本, 我想根据省市区得到一个数据结构
+```
+    d = {
+      '云南': {
+        '丽江': ['古城区', '朗县'],
+        '保山': ['城关区']
+      },
+      '北京': {
+        '北京': ['东城区']
+      },
+      ...
+    }
+
+---
+class: inverse
+```
+如果不用defaultdict要做很多的空逻辑判断，烦躁
+```
+
+    from collections import defaultdict
+    data = [
+      [u'北京', u'北京', u'东城区'],
+      [u'北京', u'北京', u'大兴区'],
+      [u'云南', u'丽江', u'古城区']
+    ]
+
+    provinces = defaultdict(lambda: defaultdict(lambda: []))
+
+    for each in data:
+        province, city, district = each
+        provinces[province][city].append(district)
+
+---
+class: inverse
+```
+计数统计的时候非常好用, 例如我要作词云统计单词
+```
+    data = [
+      u'人生最奇妙的地方就在于，她的公平与无私。如果我们在前一段路途中就预支了幸福，后面一段，必定痛苦，如果我们在最开始就心怀感恩，冒雨前行，最终后半段的路途也会变得通达又平稳。',
+      u'有梦想的人不做选择题，只做证明题，所以，年轻的你，可以犯错，可以跌倒，但千万不要怀疑自己，也不要放弃梦想。去想去的地方，做该做的事情，不迟疑，不徘徊。2016，向自己承诺：从此刻开始，你做的每个选择，都让自己比现在快乐、充实。',
+      u'自嘲才是高端的幽默，揭别人短即使风趣也失了风度。',
+      ...
+    ]
+
+    count_data = defaultdict(int)
+
+    for line in data:
+        words = jieba.cut(line)
+        for word in words:
+            count_data[word] += 1
+
+    # 输出大体长这样
+    count_data = {
+      u'人': 10,
+      u'人生': 2,
+      ...
+    }
+---
+class: inverse
+## 避免讨厌的if判断
+```
+有同学说if看起来特别整齐，特别赞，其实这种方式特别蛋疼,
+因为如果if不到，是需要判断所有分支的，慢，而且个人感觉这样很蛋疼
+```
+    class UserView(GenericAPIView):
+
+        def post(self, request, register_type, format=None):
+            '''create user, support tv, email, phone'''
+            if register_type == 'email':
+                user, profile, registration = 
+                    self.create_user_with_email(request, post_vars)
+            elif register_type == 'phone':
+                user, profile, registration = 
+                    self.create_user_with_phone(request, post_vars)
+            elif register_type == 'auto':
+                user, profile, registration = 
+                    self.create_tv_user(request, post_vars)
+            else:
+                user, profile, registration = 
+                    self.create_user_with_phone(request, post_vars)
+            ...
+
+---
+class: inverse
+## 请使用dict
+
+    class UserView(GenericAPIView):
+
+        def post(self, request, register_type, format=None):
+            '''create user, support tv, email, phone'''
+            handler_mapper = defaultdict(
+              lambda: self.create_user_with_phone)
+            handler_mapper.update({
+                'email': self.create_user_with_email,
+                'phone': self.create_user_with_phone,
+                'auto': self.create_tv_user,
+            })  
+
+            try:
+                user, profile, registration = handler_mapper[
+                    register_type](request, post_vars)
+            except:
+                ...
+---
+class: inverse
+
+## python的各种解析
+
+    python并不只有列表解析
+
+    列表解析 []
+    ---
+    c = [(i,j) for i,j in enumerate(range(5))]
+    ==> [(0, 0), (1, 1), (2, 2), (3, 3), (4, 4)]
+
+    字典解析 {key:value XXXX}
+    ---
+    c = {i:j for i,j in enumerate(range(5))}
+    ==> {0: 0, 1: 1, 2: 2, 3: 3, 4: 4}
+
+    集合解析 {value XXXX}
+    ---
+    c = {i for i,j in enumerate(range(5))}
+    ==> set([0, 1, 2, 3, 4])
+---
+class: inverse
+## 一些不常用但是在某些情况下极为好用的东西
+```
+itemgetter, attrgetter -- sorted时可以方便的给key，
+当然你可以用lambda
+
+groupby 数据库分组需求不满足时用这个分组，注意要先sort，
+而且key要相同
+
+partial 当你构架写框架级别的或者是工具的东西的时候非常好用
+```
+    from operator import itemgetter, attrgetter
+    from itertools import groupby
+    from functools import partial
+---
+class: inverse
+## 乱七八糟的东西
+
+    isinstance可以判断多个类型
+    isinstance(obj,(type1,type2))
+    isinstance('duoduo',basestring)
+
+    当split的规则有多个时，使用re的split
+
+    tring = "the,rain;in,spain"
+    pattern = re.compile(',|;')
+    words = pattern.split(string)
+
+    with open两个或者多个文件
+
+    with open('a', 'w') as a, open('b', 'w') as b:
+        do_something()
+
+---
+class: inverse
+## 坑爹的特性
+```
+同行间隔字符串会自动连接
+```
+    'Hello, world' == "Hello" ", " "world"
+    不同行的字符串也会链接
+    a = 'aabc'
+        'def'
+
+    a == 'aabcdef'
+---
+class: inverse
+```
+python里面各种蛋疼的事情还有很多,但是我懒得写了,例如
+
+1. 发布package到pypi
+2. 各种编码问题
+3. 各种诡异包的安装问题
+4. 各种脚本工具
+5. 各种网络的问题，html解析爬虫等等
+....
+```
+
+---
+class: center, middle, inverse
+# Q &amp; A
+---
+class: center, middle, inverse
+## To be continued.
+---
+class: center, middle, inverse
+## 下一期：
+## Django或者RestFramework奇淫巧计
+---
+class: center, middle, inverse
+## 联系方式
+
+### GitHub: [duoduo3369](https://github.com/duoduo369)
+
+### Gmail: [duoduo3369@gmail.com](mailto:duoduo3369@gmail.com)
+
+---
+class: center, middle, inverse
+# 谢谢大家
+#### Made in [Remark](http://remarkjs.com)
+    </textarea>
+    <script src="js/remark.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var slideshow = remark.create({
+        highlightStyle: 'monokai',
+        highlightLanguage: 'remark'
+      });
+    </script>
+  </body>
+</html>
